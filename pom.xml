@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <packaging>pom</packaging>
+    <modules>
+        <module>dao</module>
+        <module>util</module>
+        <module>web</module>
+        <module>business</module>
+    </modules>
+    <parent>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <version>3.0.1</version>
+        <relativePath/> <!-- lookup parent from repository -->
+    </parent>
+    <groupId>edu.ZCMU</groupId>
+    <artifactId>nursing_lesson</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
+    <name>nursing_lesson</name>
+    <description>a project for Zhejiang Chinese Medical University&apos;s lesson</description>
+    <properties>
+        <java.version>17</java.version>
+        <druid.version>1.2.3</druid.version>
+        <fastjosn.version>1.2.73</fastjosn.version>
+        <jedis.verson>3.3.0</jedis.verson>
+        <redis.version>2.3.3.RELEASE</redis.version>
+        <hutool.version>5.8.5</hutool.version>
+        <swagger.version>2.7.0</swagger.version>
+        <swagger.ui.version>${swagger.version}</swagger.ui.version>
+        <knf4j.version>2.0.4</knf4j.version>
+        <json.version>1.2.73</json.version>
+        <easyexcel.version>3.1.5</easyexcel.version>
+        <jwt.version>0.9.1</jwt.version>
+        <javax.xml.version>2.3.0</javax.xml.version>
+    </properties>
+
+    <repositories>
+        <repository>
+            <id>repo1</id>
+            <name>Central Repository 2</name>
+            <url>https://repo1.maven.org/maven2/</url>
+        </repository>
+    </repositories>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-jpa</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>com.mysql</groupId>
+            <artifactId>mysql-connector-j</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <!--    junit测试环境    -->
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>4.13</version>
+        </dependency>
+
+        <!--    druid 连接池    -->
+        <dependency>
+            <groupId>com.alibaba</groupId>
+            <artifactId>druid</artifactId>
+            <version>${druid.version}</version>
+        </dependency>
+        <!--    swagger    -->
+        <dependency>
+            <groupId>io.springfox</groupId>
+            <artifactId>springfox-swagger2</artifactId>
+            <version>${swagger.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.springfox</groupId>
+            <artifactId>springfox-swagger-ui</artifactId>
+            <version>${swagger.ui.version}</version>
+        </dependency>
+        <!--    swagger 皮肤    -->
+        <dependency>
+            <groupId>com.github.xiaoymin</groupId>
+            <artifactId>knife4j-spring-boot-starter</artifactId>
+            <version>${knf4j.version}</version>
+        </dependency>
+    </dependencies>
+
+</project>
