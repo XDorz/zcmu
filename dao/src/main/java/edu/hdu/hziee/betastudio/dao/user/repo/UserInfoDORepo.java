@@ -20,4 +20,8 @@ public interface UserInfoDORepo extends JpaRepository<UserInfoDO,Long> {
     @Modifying
     @Query(value = "update user_info set user_name=?2 where user_id=?1",nativeQuery = true)
     Integer updateUserName(Long userId,String userName);
+
+    @Modifying
+    @Query(value = "update user_info set deleted=true where user_id=?1",nativeQuery = true)
+    Integer deleteUser(Long userId);
 }

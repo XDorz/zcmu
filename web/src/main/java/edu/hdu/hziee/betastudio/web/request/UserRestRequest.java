@@ -4,6 +4,8 @@ import edu.hdu.hziee.betastudio.web.aop.UserCheckedRequest;
 import lombok.Data;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.List;
+
 @Data
 public class UserRestRequest implements UserCheckedRequest {
 
@@ -21,5 +23,7 @@ public class UserRestRequest implements UserCheckedRequest {
     private String userName;
 
     private String picUrl;
+
+    private List<Long> userIds;
 
 }

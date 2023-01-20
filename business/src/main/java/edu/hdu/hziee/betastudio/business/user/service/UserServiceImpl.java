@@ -3,16 +3,21 @@ package edu.hdu.hziee.betastudio.business.user.service;
 import cn.hutool.core.util.IdUtil;
 import cn.hutool.crypto.digest.DigestUtil;
 import com.alibaba.excel.EasyExcel;
+import edu.hdu.hziee.betastudio.business.aop.VerifyPerm;
+import edu.hdu.hziee.betastudio.business.perm.request.UserPermRequest;
+import edu.hdu.hziee.betastudio.business.perm.service.PermService;
 import edu.hdu.hziee.betastudio.business.user.convert.UserConvert;
 import edu.hdu.hziee.betastudio.business.user.model.AppUserInfoBO;
 import edu.hdu.hziee.betastudio.business.user.model.UserInfoBO;
 import edu.hdu.hziee.betastudio.business.user.request.UserRequest;
+import edu.hdu.hziee.betastudio.dao.perm.repo.PermUserRelationDORepo;
 import edu.hdu.hziee.betastudio.dao.user.model.UserDO;
 import edu.hdu.hziee.betastudio.dao.user.model.UserInfoDO;
 import edu.hdu.hziee.betastudio.dao.user.repo.UserDORepo;
 import edu.hdu.hziee.betastudio.dao.user.repo.UserInfoDORepo;
 import edu.hdu.hziee.betastudio.util.common.*;
 import edu.hdu.hziee.betastudio.util.customenum.ExceptionResultCode;
+import edu.hdu.hziee.betastudio.util.customenum.PermEnum;
 import edu.hdu.hziee.betastudio.util.customenum.basic.ZCMUConstant;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,9 +46,16 @@ public class UserServiceImpl implements UserService {
     @Autowired
     UserConvert convert;
 
+    @Autowired
+    PermUserRelationDORepo permUserRelationDORepo;
+
+    @Autowired
+    PermService permService;
+
     @Override
-    public String register(String account, String password, String realName, long stuId) {
+    public String register(String account, String password, String realName, long stuId, PermEnum... perms) {
         long userId = IdUtil.getSnowflakeNextId();
+        //保存用户信息
         realName = realName == null ? "未知" : realName;
         UserInfoDO userInfoDO = UserInfoDO.builder()
                 .userName(realName)
@@ -57,6 +69,7 @@ public class UserServiceImpl implements UserService {
         String salt = UUID.randomUUID().toString();
         password = password == null ? ZCMUConstant.DEFAULT_PASSWORD : password;
 
+        //保存账号信息
         UserDO userDO = UserDO.builder()
                 .lastLoginIp("127.0.0.1")
                 .lastLoginDate(new Date())
@@ -66,6 +79,14 @@ public class UserServiceImpl implements UserService {
                 .password(DigestUtil.md5Hex(password + salt, StandardCharsets.UTF_8))
                 .build();
         userDORepo.save(userDO);
+
+        //批量绑定权限
+        for (PermEnum perm : perms) {
+            permService.givePerm(UserPermRequest.builder()
+                    .userId(userId)
+                    .codeName(perm.getCode())
+                    .build());
+        }
         return tokenUtil.getToken(userId);
     }
 
@@ -73,9 +94,9 @@ public class UserServiceImpl implements UserService {
      * 默认账号密码--学号
      */
     @Override
+    @VerifyPerm(perms = {PermEnum.MANAGER})
     @Transactional(rollbackFor = Exception.class)
-    public String register(UserRequest request) {
-        //todo 增加鉴权！
+    public String register(UserRequest request,PermEnum... perms) {
         List<UserInfoBO> userInfoBOS=new ArrayList<>();
         InputStream excelStream = null;
         try {
@@ -111,6 +132,7 @@ public class UserServiceImpl implements UserService {
 
         //正式注册
         for (UserInfoBO userInfoBO : userInfoBOS) {
+            //注册用户信息
             long userId = IdUtil.getSnowflakeNextId();
             UserInfoDO userInfoDO = UserInfoDO.builder()
                     .userName(userInfoBO.getRealName())
@@ -134,6 +156,7 @@ public class UserServiceImpl implements UserService {
                     .build();
             userInfoDORepo.save(userInfoDO);
 
+            //注册用户账户
             String salt = UUID.randomUUID().toString();
             String password = ZCMUConstant.DEFAULT_PASSWORD == null ? userInfoBO.getStuId().toString() : ZCMUConstant.DEFAULT_PASSWORD;
             UserDO userDO = UserDO.builder()
@@ -145,6 +168,14 @@ public class UserServiceImpl implements UserService {
                     .password(DigestUtil.md5Hex(password + salt, StandardCharsets.UTF_8))
                     .build();
             userDORepo.save(userDO);
+
+            //批量绑定权限
+            for (PermEnum perm : perms) {
+                permService.givePerm(UserPermRequest.builder()
+                        .userId(userId)
+                        .codeName(perm.getCode())
+                        .build());
+            }
         }
         return null;
     }
@@ -187,5 +218,18 @@ public class UserServiceImpl implements UserService {
         String salt = UUID.randomUUID().toString();
         return userDORepo.updatePassword(request.getUserId()
                 , DigestUtil.md5Hex(request.getPassword() + salt, StandardCharsets.UTF_8), salt);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void deleteUser(UserRequest request) {
+        //修改用户信息为注销
+        userInfoDORepo.updateUserName(request.getUserId(),"该用户已注销");
+        userInfoDORepo.deleteUser(request.getUserId());
+        userInfoDORepo.updatePic(request.getUserId(),ZCMUConstant.DELETED_PIC_URL);
+        //todo 修改学号为非unique？
+
+        //删除用户所有权限
+        permUserRelationDORepo.deleteAllByUserId(request.getUserId());
     }
 }

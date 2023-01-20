@@ -1,6 +1,6 @@
 package edu.hdu.hziee.betastudio.dao.comment.model;
 
-import edu.hdu.hziee.betastudio.util.model.BasicModel;
+import edu.hdu.hziee.betastudio.util.model.BasicModelWithId;
 import jakarta.persistence.*;
 import lombok.Builder;
 import lombok.Data;
@@ -13,16 +13,13 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 @Builder
 @ToString
 @EntityListeners(AuditingEntityListener.class)
-@org.hibernate.annotations.Table(appliesTo = "zcmu_comment",comment = "评论表")
-@Table(name = "zcmu_comment",indexes = {
-        @Index(name = "uk_theme_id",columnList = "theme_id"),
-        @Index(name = "uk_user_id",columnList = "user_id"),
-        @Index(name = "uk_master_id",columnList = "master_id"),
-        @Index(name = "uk_deleted",columnList = "deleted"),
+@org.hibernate.annotations.Table(appliesTo = "zcmu_comment_tmp",comment = "评论查找临时表")
+@Table(name = "zcmu_comment_tmp",indexes = {
+        @Index(name = "uk_comment_id",columnList = "comment_id"),
+        @Index(name = "uk_previous_comment_id",columnList = "previous_comment_id"),
 })
-public class CommentDO extends BasicModel {
+public class CommentDOTmp extends BasicModelWithId {
 
-    @Id
     @Column(name="comment_id",updatable = false,nullable = false,unique = true,columnDefinition = "bigint(20) comment '评论id'")
     private Long commentId;
 
@@ -54,5 +51,5 @@ public class CommentDO extends BasicModel {
     private boolean deleted;
 
     @Tolerate
-    public CommentDO(){}
+    public CommentDOTmp(){}
 }

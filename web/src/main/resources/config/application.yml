@@ -44,9 +44,11 @@ spring:
 
 zcmu:
   constant:
-    user_pic_url: https://zcmu-resours-1305805121.cos.ap-shanghai.myqcloud.com/dev/zcmu/caoshen.png
-    lesson_pic_url: https://zcmu-resours-1305805121.cos.ap-shanghai.myqcloud.com/dev/zcmu/caoshen.png
+    user_pic_url: https://zcmu-resours-1305805121.cos.ap-shanghai.myqcloud.com/dev/zcmu/208a66c9-3fc8-470a-b5aa-a7e11ac3f288.jpg
+    lesson_pic_url: https://zcmu-resours-1305805121.cos.ap-shanghai.myqcloud.com/dev/zcmu/cb689605-7740-4297-8ead-ce6347e29264.jpg
+    deleted_pic_url: https://zcmu-resours-1305805121.cos.ap-shanghai.myqcloud.com/dev/zcmu/cb689605-7740-4297-8ead-ce6347e29264.jpg
     auth_head: Authorization
+    manager_account: 123456
     default_password: 123456
   jwt:
     config:
@@ -83,10 +85,5 @@ zcmu:
         secret_id: AKIDztfFoBNPEqJbh1EOROJD9FG6tYDj1JVa
         secret_key: 72qWAg6LNCuX6axDTegbR8h7MTS3VyHR
         bucket_name: ${zcmu.tecent.cos.bucket_name}
-  trash:
-    price:
-      bottle: 5
-      paper: 2
-      other: 1
   max_temp: 70
 

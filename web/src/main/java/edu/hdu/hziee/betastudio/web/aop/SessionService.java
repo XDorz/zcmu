@@ -56,7 +56,9 @@ public class SessionService {
             return RestUtil.buildFailResult(ExceptionResultCode.ILLEGAL_PARAMETERS.getCode(),"未找到鉴权请求");
         }
         String token=httpServletRequest.getHeader(ZCMUConstant.AUTH_HEAD);
-        AssertUtil.assertNotNull(token,ExceptionResultCode.UNAUTHORIZED,"未登录或者登录凭证过期");
+        if(token==null){
+            return RestUtil.buildFailResult("未登录或者登录凭证过期");
+        }
         if(!userService.verifyLogin(token)){
             return RestUtil.buildFailResult(ExceptionResultCode.UNAUTHORIZED.getCode(),"token验证失败，可能已经过期,请重新登录");
         }

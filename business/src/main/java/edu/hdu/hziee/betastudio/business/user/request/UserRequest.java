@@ -19,8 +19,6 @@ public class UserRequest extends PermRequest {
      */
     private Long targetUserId;
 
-    private Long verifyId;
-
     private String account;
 
     private String password;

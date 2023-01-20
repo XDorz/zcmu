@@ -17,10 +17,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.websocket.server.PathParam;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
@@ -37,7 +34,7 @@ public class UserController {
     UserInfoService userInfoService;
 
     //todo 待系统自检并创建管理账号完成后恢复用户登录检查，目前测试暂不检查用户登录
-//    @CheckLogin
+    @CheckLogin
     @PostMapping("/batchregister")
     public ZCMUResult<String> register(UserRestRequest request, HttpServletRequest httpServletRequest
             , @PathParam("userExcel") MultipartFile userExcel){
@@ -53,8 +50,8 @@ public class UserController {
             public ZCMUResult<String> operate() throws IOException {
                 UserRequest userRequest = UserRequest.builder()
                         .userExcelFile(userExcel)
-                        .verifyId(request.getUserId())
                         .build();
+                userRequest.setVerifyId(request.getUserId());
                 String result = userService.register(userRequest);
                 if(result==null){
                     return RestUtil.buildSuccessResult("本次批量注册成功","未发现错误");
@@ -147,6 +144,32 @@ public class UserController {
                         .build();
                 userService.updatePassword(userRequest);
                 return RestUtil.buildSuccessResult("修改密码成功");
+            }
+        });
+    }
+
+    @CheckLogin
+    @DeleteMapping
+    public ZCMUResult<Void> deleteUser(UserRestRequest request, HttpServletRequest httpServletRequest){
+        return OperateTemplate.operate(log, "删除用户", request, httpServletRequest, new OperateCallBack<Void>() {
+            @Override
+            public void before() {
+                AssertUtil.assertNotNull(request,ExceptionResultCode.ILLEGAL_PARAMETERS,"请求不能为空");
+                AssertUtil.assertNotNull(httpServletRequest,ExceptionResultCode.ILLEGAL_PARAMETERS,"请求不能为空");
+                AssertUtil.assertNotNull(request.getUserIds(), ExceptionResultCode.ILLEGAL_PARAMETERS,"删除用户列表不能为空");
+                AssertUtil.assertNotNull(request.getUserId(), ExceptionResultCode.UNAUTHORIZED,"用户未登录");
+            }
+
+            @Override
+            public ZCMUResult<Void> operate() throws Exception {
+                UserRequest userRequest=UserRequest.builder()
+                        .build();
+                userRequest.setVerifyId(request.getUserId());
+                for (Long userId : request.getUserIds()) {
+                    userRequest.setUserId(userId);
+                    userService.deleteUser(userRequest);
+                }
+                return RestUtil.buildSuccessResult("用户批量删除成功");
             }
         });
     }

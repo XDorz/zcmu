@@ -16,7 +16,7 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 @org.hibernate.annotations.Table(appliesTo = "user_info",comment = "用户信息表")
 @Table(name = "user_info",indexes = {
         @Index(name = "uk_stu_id",columnList = "stu_id",unique = true),
-        @Index(name = "uk_real_name",columnList = "real_name",unique = true),
+        @Index(name = "uk_real_name",columnList = "real_name"),
         @Index(name = "uk_deleted",columnList = "deleted"),
 })
 public class UserInfoDO extends BasicModel {
