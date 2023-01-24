@@ -2,6 +2,7 @@ package edu.hdu.hziee.betastudio.dao.comment.repo;
 
 import edu.hdu.hziee.betastudio.dao.comment.model.CommentDO;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
@@ -15,6 +16,8 @@ public interface CommentDORepo extends JpaRepository<CommentDO,Long> {
     List<CommentDO> findAllByThemeIdAndDeleted(Long themeId,boolean deleted);
 
     List<CommentDO> findAllByMasterIdAndDeleted(Long themeId,boolean deleted);
+
+    CommentDO findAllByPreviousCommentIdAndDeleted(Long commentId,boolean deleted);
 
     /**
      * 备用查询语句，推荐使用
@@ -30,4 +33,16 @@ public interface CommentDORepo extends JpaRepository<CommentDO,Long> {
             ") " +
             "select * from role_extend_temp;", nativeQuery = true)
     List<CommentDO> findCommentList(Long commentId);
+
+    @Modifying
+    @Query(value = "update zcmu_comment set deleted=?2 where comment_id=?1",nativeQuery = true)
+    Integer deleteComment(Long commentId,boolean deleted);
+
+    @Modifying
+    @Query(value = "update zcmu_comment set content=?2 where comment_id=?1",nativeQuery = true)
+    Integer updateContent(Long commentId,String content);
+
+    @Modifying
+    @Query(value = "update zcmu_comment set previous_comment_id=?2 where comment_id=?1",nativeQuery = true)
+    Integer updatePreviousId(Long commentId,Long previousCommentId);
 }

@@ -81,11 +81,13 @@ public class UserServiceImpl implements UserService {
         userDORepo.save(userDO);
 
         //批量绑定权限
+        UserPermRequest userPermRequest = UserPermRequest.builder()
+                .userId(userId)
+                .build();
+        userPermRequest.setSkipVerify(true);
         for (PermEnum perm : perms) {
-            permService.givePerm(UserPermRequest.builder()
-                    .userId(userId)
-                    .codeName(perm.getCode())
-                    .build());
+            userPermRequest.setCodeName(perm.getCode());
+            permService.givePerm(userPermRequest);
         }
         return tokenUtil.getToken(userId);
     }
@@ -170,11 +172,13 @@ public class UserServiceImpl implements UserService {
             userDORepo.save(userDO);
 
             //批量绑定权限
+            UserPermRequest userPermRequest = UserPermRequest.builder()
+                    .userId(userId)
+                    .build();
+            userPermRequest.setSkipVerify(true);
             for (PermEnum perm : perms) {
-                permService.givePerm(UserPermRequest.builder()
-                        .userId(userId)
-                        .codeName(perm.getCode())
-                        .build());
+                userPermRequest.setCodeName(perm.getCode());
+                permService.givePerm(userPermRequest);
             }
         }
         return null;

@@ -24,6 +24,6 @@ public interface PermUserRelationDORepo extends JpaRepository<PermUserRelationDO
     Integer deleteAllByUserId(Long userId);
 
     @Modifying
-    @Query(value = "delete from perm_user_relation where userId=?1 and perm_id in (?2)",nativeQuery = true)
+    @Query(value = "delete from perm_user_relation where user_id=?1 and perm_id in (?2)",nativeQuery = true)
     Integer takeBackPerms(Long userId,List<Long> permIds);
 }

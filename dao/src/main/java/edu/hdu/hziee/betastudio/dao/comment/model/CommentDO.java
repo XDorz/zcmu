@@ -22,6 +22,9 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 })
 public class CommentDO extends BasicModel {
 
+    /**
+     * 如果是帖子主内容则该id为themeId，themeId置为空
+     */
     @Id
     @Column(name="comment_id",updatable = false,nullable = false,unique = true,columnDefinition = "bigint(20) comment '评论id'")
     private Long commentId;
@@ -32,7 +35,7 @@ public class CommentDO extends BasicModel {
     @Column(name="user_id",updatable = false,nullable = false,unique = false,columnDefinition = "bigint(20) comment '评论人id'")
     private Long userId;
 
-    @Column(name="previous_comment_id",updatable = false,nullable = true,unique = false,columnDefinition = "bigint(20) comment '前一个评论的id'")
+    @Column(name="previous_comment_id",updatable = true,nullable = true,unique = false,columnDefinition = "bigint(20) comment '前一个评论的id'")
     private Long previousCommentId;
 
     @Column(name="master_id",updatable = false,nullable = true,unique = false,columnDefinition = "bigint(20) comment '父评论id'")

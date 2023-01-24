@@ -24,10 +24,10 @@ public class PermUserRelationDO extends BasicModel {
     @Column(name="relation_id",updatable = false,nullable = false,unique = true,columnDefinition = "bigint(20) comment '关系id'")
     private Long relationId;
 
-    @Column(name="perm_id",updatable = false,nullable = false,unique = true,columnDefinition = "bigint(20) comment '权限id'")
+    @Column(name="perm_id",updatable = false,nullable = false,unique = false,columnDefinition = "bigint(20) comment '权限id'")
     private Long permId;
 
-    @Column(name="user_id",updatable = false,nullable = false,unique = true,columnDefinition = "bigint(20) comment '用户id'")
+    @Column(name="user_id",updatable = false,nullable = false,unique = false,columnDefinition = "bigint(20) comment '用户id'")
     private Long userId;
 
     @Tolerate

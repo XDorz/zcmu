@@ -14,10 +14,7 @@ import edu.hdu.hziee.betastudio.web.request.PermRestRequest;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
 import java.util.List;
@@ -82,7 +79,7 @@ public class PermController {
     }
 
     @CheckLogin
-    @PostMapping("/give")
+    @PutMapping("/give")
     public ZCMUResult<Void> givePerm(PermRestRequest request, HttpServletRequest httpServletRequest){
         return OperateTemplate.operate(log, "给予权限", request, httpServletRequest, new OperateCallBack<Void>() {
             @Override
@@ -108,14 +105,14 @@ public class PermController {
     }
 
     @CheckLogin
-    @PostMapping("/takeback")
+    @PutMapping("/takeback")
     public ZCMUResult<PermBO> takeBackPerm(PermRestRequest request, HttpServletRequest httpServletRequest){
         return OperateTemplate.operate(log, "收回用户权限", request, httpServletRequest, new OperateCallBack<PermBO>() {
             @Override
             public void before() {
                 AssertUtil.assertNotNull(request, ExceptionResultCode.ILLEGAL_PARAMETERS,"请求不能为空");
                 AssertUtil.assertNotNull(httpServletRequest,ExceptionResultCode.ILLEGAL_PARAMETERS,"请求不能为空");
-                AssertUtil.assertNotNull(request.getPermId(),ExceptionResultCode.ILLEGAL_PARAMETERS,"权限id不能为空");
+                AssertUtil.assertNotNull(request.getPermIds(),ExceptionResultCode.ILLEGAL_PARAMETERS,"权限id列表不能为空");
                 AssertUtil.assertNotNull(request.getTargetUserId(),ExceptionResultCode.ILLEGAL_PARAMETERS,"目标用户id不能为空");
                 AssertUtil.assertNotNull(request.getUserId(),ExceptionResultCode.UNAUTHORIZED,"用户未登录");
             }
@@ -124,7 +121,7 @@ public class PermController {
             public ZCMUResult<PermBO> operate() throws IOException {
                 UserPermRequest userPermRequest = UserPermRequest.builder()
                         .userId(request.getTargetUserId())
-                        .permId(request.getPermId())
+                        .permIds(request.getPermIds())
                         .build();
                 userPermRequest.setVerifyId(request.getUserId());
                 permService.takeBackPerm(userPermRequest);
@@ -134,9 +131,9 @@ public class PermController {
     }
 
     @CheckLogin
-    @PostMapping("/all")
+    @GetMapping("/all")
     public ZCMUResult<List<PermBO>> getAllPerm(PermRestRequest request, HttpServletRequest httpServletRequest){
-        return OperateTemplate.operate(log, "用户创建权限", request, httpServletRequest, new OperateCallBack<List<PermBO>>() {
+        return OperateTemplate.operate(log, "查看所有权限", request, httpServletRequest, new OperateCallBack<List<PermBO>>() {
             @Override
             public void before() {
                 AssertUtil.assertNotNull(request, ExceptionResultCode.ILLEGAL_PARAMETERS,"请求不能为空");
@@ -149,15 +146,15 @@ public class PermController {
                 UserPermRequest userPermRequest = UserPermRequest.builder()
                         .build();
                 userPermRequest.setVerifyId(request.getUserId());
-                return RestUtil.buildSuccessResult(permService.getAllPerm(userPermRequest),"上传成功");
+                return RestUtil.buildSuccessResult(permService.getAllPerm(userPermRequest),"获取所有权限成功！");
             }
         });
     }
 
     @CheckLogin
     @PostMapping("/user/perm")
-    public ZCMUResult<List<PermBO>> userPerm(PermRestRequest request, HttpServletRequest httpServletRequest){
-        return OperateTemplate.operate(log, "查看某用户的权限情况", request, httpServletRequest, new OperateCallBack<List<PermBO>>() {
+    public ZCMUResult<List<List<PermBO>>> userPerm(PermRestRequest request, HttpServletRequest httpServletRequest){
+        return OperateTemplate.operate(log, "查看某用户的权限情况", request, httpServletRequest, new OperateCallBack<List<List<PermBO>>>() {
             @Override
             public void before() {
                 AssertUtil.assertNotNull(request, ExceptionResultCode.ILLEGAL_PARAMETERS,"请求不能为空");
@@ -167,12 +164,12 @@ public class PermController {
             }
 
             @Override
-            public ZCMUResult<List<PermBO>> operate() throws IOException {
+            public ZCMUResult<List<List<PermBO>>> operate() throws IOException {
                 UserPermRequest userPermRequest = UserPermRequest.builder()
                         .userId(request.getTargetUserId())
                         .build();
                 userPermRequest.setVerifyId(request.getUserId());
-                return RestUtil.buildSuccessResult(permService.getAllPerm(userPermRequest),"获取用户权限信息成功");
+                return RestUtil.buildSuccessResult(permService.getAllUserPermInfo(userPermRequest),"获取用户权限信息成功");
             }
         });
     }

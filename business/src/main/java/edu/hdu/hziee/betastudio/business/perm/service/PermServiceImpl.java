@@ -8,6 +8,7 @@ import edu.hdu.hziee.betastudio.dao.perm.model.PermDO;
 import edu.hdu.hziee.betastudio.dao.perm.model.PermUserRelationDO;
 import edu.hdu.hziee.betastudio.dao.perm.repo.PermDORepo;
 import edu.hdu.hziee.betastudio.dao.perm.repo.PermUserRelationDORepo;
+import edu.hdu.hziee.betastudio.dao.user.repo.UserDORepo;
 import edu.hdu.hziee.betastudio.util.common.AssertUtil;
 import edu.hdu.hziee.betastudio.util.common.CollectionUtils;
 import edu.hdu.hziee.betastudio.util.customenum.ExceptionResultCode;
@@ -31,6 +32,8 @@ public class PermServiceImpl implements PermService{
 
     @Autowired
     PermConvert convert;
+    @Autowired
+    private UserDORepo userDORepo;
 
     @Override
     public boolean userExistPerm(UserPermRequest request) {
@@ -66,6 +69,7 @@ public class PermServiceImpl implements PermService{
         }
 
         permUserRelationDORepo.deleteAllByPermId(permDO.getPermId());
+        permDORepo.deletePerm(permDO.getPermId(),true);
         return convert.convert(permDO);
     }
 
@@ -78,6 +82,9 @@ public class PermServiceImpl implements PermService{
             permDO=permDORepo.findAllByPermId(request.getPermId());
         }
         AssertUtil.assertNotNull(permDO,ExceptionResultCode.ILLEGAL_PARAMETERS,"查无此权限！权限未给予");
+
+        boolean b = permUserRelationDORepo.existsByUserIdAndPermId(request.getUserId(), request.getPermId());
+        AssertUtil.assertTrue(!b,ExceptionResultCode.ILLEGAL_PARAMETERS,"该用户已有此权限，无法重复给予！");
 
         permUserRelationDORepo.save(
                 PermUserRelationDO.builder()
@@ -96,7 +103,7 @@ public class PermServiceImpl implements PermService{
 
     @Override
     public List<PermBO> getAllPerm(UserPermRequest request) {
-        return CollectionUtils.toStream(permDORepo.findAll())
+        return CollectionUtils.toStream(permDORepo.findAllByDeleted(false))
                 .filter(Objects::nonNull)
                 .map(convert::convert)
                 .toList();
@@ -111,7 +118,9 @@ public class PermServiceImpl implements PermService{
         List<PermBO> hasPerm=new ArrayList<>();
         permRequest.setSkipVerify(true);
         //该列表用作该用户未拥有的权限
-        List<PermBO> permBOS = getAllPerm(permRequest);
+        List<PermBO> dataPermBOS = getAllPerm(permRequest);
+        //数据库查询返回的是不可变集合，无法在接下来的迭代操作中调用remove，故将集合类型改变
+        List<PermBO> permBOS=new ArrayList<>(dataPermBOS);
         //迭代列表，将拥有的权限移入hasPerm链表，未拥有的权限保留，同时设置他们的havePerm值
         Iterator<PermBO> ite = permBOS.iterator();
         while (ite.hasNext()){
@@ -121,7 +130,9 @@ public class PermServiceImpl implements PermService{
                     ite.remove();
                     permBO.setHavePerm(true);
                     hasPerm.add(permBO);
+                    break;
                 }else {
+                    //todo 默认查询出来permBO就是false，下面代码可注释以提高性能
                     permBO.setHavePerm(false);
                 }
             }

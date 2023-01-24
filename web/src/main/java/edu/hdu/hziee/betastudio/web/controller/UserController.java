@@ -7,6 +7,7 @@ import edu.hdu.hziee.betastudio.business.user.service.UserService;
 import edu.hdu.hziee.betastudio.util.common.AssertUtil;
 import edu.hdu.hziee.betastudio.util.common.IpUtil;
 import edu.hdu.hziee.betastudio.util.customenum.ExceptionResultCode;
+import edu.hdu.hziee.betastudio.util.customenum.PermEnum;
 import edu.hdu.hziee.betastudio.util.resulttemplate.OperateCallBack;
 import edu.hdu.hziee.betastudio.util.resulttemplate.OperateTemplate;
 import edu.hdu.hziee.betastudio.util.resulttemplate.restfulresult.RestUtil;
@@ -33,7 +34,6 @@ public class UserController {
     @Autowired
     UserInfoService userInfoService;
 
-    //todo 待系统自检并创建管理账号完成后恢复用户登录检查，目前测试暂不检查用户登录
     @CheckLogin
     @PostMapping("/batchregister")
     public ZCMUResult<String> register(UserRestRequest request, HttpServletRequest httpServletRequest
@@ -52,7 +52,7 @@ public class UserController {
                         .userExcelFile(userExcel)
                         .build();
                 userRequest.setVerifyId(request.getUserId());
-                String result = userService.register(userRequest);
+                String result = userService.register(userRequest, PermEnum.STUDENT);
                 if(result==null){
                     return RestUtil.buildSuccessResult("本次批量注册成功","未发现错误");
                 }else {
