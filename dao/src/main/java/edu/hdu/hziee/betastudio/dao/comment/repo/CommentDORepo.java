@@ -13,7 +13,7 @@ public interface CommentDORepo extends JpaRepository<CommentDO,Long> {
 
     CommentDO findAllByCommentId(Long commitId);
 
-    List<CommentDO> findAllByThemeIdAndDeleted(Long themeId,boolean deleted);
+    List<CommentDO> findAllByThemeIdAndMasterIdAndDeleted(Long themeId,Long masterId,boolean deleted);
 
     List<CommentDO> findAllByMasterIdAndDeleted(Long themeId,boolean deleted);
 

@@ -26,6 +26,7 @@ public class CommentConvert {
 
     @Autowired
     CommentDORepo commentDORepo;
+
     public CommentBO convert(CommentDO commentDO){
         AssertUtil.assertNotNull(commentDO, ExceptionResultCode.ILLEGAL_PARAMETERS,"转换对象为空");
         CommentBO commentBO = CommentBO.builder()

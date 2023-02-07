@@ -17,10 +17,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.websocket.server.PathParam;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
@@ -49,7 +46,7 @@ public class LessonController {
             }
 
             @Override
-            public ZCMUResult<LessonBO> operate() throws IOException {
+            public ZCMUResult<LessonBO> operate(){
                 LessonRequest lessonRequest = LessonRequest.builder()
                         .name(request.getName())
                         .info(request.getInfo())
@@ -80,7 +77,7 @@ public class LessonController {
             }
 
             @Override
-            public ZCMUResult<List<SimpleLessonBO>> operate() throws IOException {
+            public ZCMUResult<List<SimpleLessonBO>> operate(){
                 LessonRequest lessonRequest = LessonRequest.builder()
                         .userId(request.getUserId())
                         .build();
@@ -102,7 +99,7 @@ public class LessonController {
             }
 
             @Override
-            public ZCMUResult<List<SimpleLessonBO>> operate() throws IOException {
+            public ZCMUResult<List<SimpleLessonBO>> operate(){
                 LessonRequest lessonRequest = LessonRequest.builder()
                         .userId(request.getUserId())
                         .build();
@@ -125,7 +122,7 @@ public class LessonController {
             }
 
             @Override
-            public ZCMUResult<LessonBO> operate() throws IOException {
+            public ZCMUResult<LessonBO> operate() {
                 LessonRequest lessonRequest = LessonRequest.builder()
                         .userId(request.getUserId())
                         .lessonId(request.getLessonId())
@@ -150,7 +147,7 @@ public class LessonController {
             }
 
             @Override
-            public ZCMUResult<LessonPassageBO> operate() throws IOException {
+            public ZCMUResult<LessonPassageBO> operate(){
                 LessonRequest lessonRequest = LessonRequest.builder()
                         .name(request.getName())
                         .userId(request.getUserId())
@@ -178,7 +175,7 @@ public class LessonController {
             }
 
             @Override
-            public ZCMUResult<Void> operate() throws IOException {
+            public ZCMUResult<Void> operate(){
                 LessonRequest lessonRequest = LessonRequest.builder()
                         .userId(request.getUserId())
                         .lessonId(request.getLessonId())
@@ -208,7 +205,7 @@ public class LessonController {
             }
 
             @Override
-            public ZCMUResult<LessonPassageBO> operate() throws IOException {
+            public ZCMUResult<LessonPassageBO> operate(){
                 LessonRequest lessonRequest = LessonRequest.builder()
                         .passageId(request.getPassageId())
                         .build();
@@ -235,12 +232,171 @@ public class LessonController {
             }
 
             @Override
-            public ZCMUResult<List<LessonPassageBO>> operate() throws IOException {
+            public ZCMUResult<List<LessonPassageBO>> operate() {
                 LessonRequest lessonRequest = LessonRequest.builder()
                         .lessonId(request.getLessonId())
                         .build();
                 lessonRequest.setVerifyId(request.getUserId());
                 return RestUtil.buildSuccessResult(lessonService.getPassageByLessonId(lessonRequest), "获取课程的所有章节信息成功");
+            }
+        });
+    }
+
+    @CheckLogin
+    @PutMapping("/name")
+    public ZCMUResult<Void> updateLessonName(LessonRestRequest request, HttpServletRequest httpServletRequest) {
+        return OperateTemplate.operate(log, "修改课程名称", request, httpServletRequest, new OperateCallBack<Void>() {
+            @Override
+            public void before() {
+                AssertUtil.assertNotNull(request, ExceptionResultCode.ILLEGAL_PARAMETERS, "请求不能为空");
+                AssertUtil.assertNotNull(httpServletRequest, ExceptionResultCode.ILLEGAL_PARAMETERS, "请求不能为空");
+                AssertUtil.assertNotNull(request.getLessonId(), ExceptionResultCode.ILLEGAL_PARAMETERS, "课程id不能为空");
+                AssertUtil.assertNotNull(request.getName(), ExceptionResultCode.ILLEGAL_PARAMETERS, "新课程名不能为空");
+                AssertUtil.assertNotNull(request.getUserId(), ExceptionResultCode.UNAUTHORIZED, "用户未登录");
+            }
+
+            @Override
+            public ZCMUResult<Void> operate(){
+                LessonRequest lessonRequest = LessonRequest.builder()
+                        .lessonId(request.getLessonId())
+                        .userId(request.getUserId())
+                        .name(request.getName())
+                        .build();
+                lessonRequest.setVerifyId(request.getUserId());
+                lessonService.updateLessonName(lessonRequest);
+                return RestUtil.buildSuccessResult(null, "课程名称修改成功");
+            }
+        });
+    }
+
+    @CheckLogin
+    @PutMapping("/info")
+    public ZCMUResult<Void> updateLessonInfo(LessonRestRequest request, HttpServletRequest httpServletRequest) {
+        return OperateTemplate.operate(log, "修改课程介绍", request, httpServletRequest, new OperateCallBack<Void>() {
+            @Override
+            public void before() {
+                AssertUtil.assertNotNull(request, ExceptionResultCode.ILLEGAL_PARAMETERS, "请求不能为空");
+                AssertUtil.assertNotNull(httpServletRequest, ExceptionResultCode.ILLEGAL_PARAMETERS, "请求不能为空");
+                AssertUtil.assertNotNull(request.getLessonId(), ExceptionResultCode.ILLEGAL_PARAMETERS, "课程id不能为空");
+                AssertUtil.assertNotNull(request.getInfo(), ExceptionResultCode.ILLEGAL_PARAMETERS, "新课程介绍不能为空");
+                AssertUtil.assertNotNull(request.getUserId(), ExceptionResultCode.UNAUTHORIZED, "用户未登录");
+            }
+
+            @Override
+            public ZCMUResult<Void> operate(){
+                LessonRequest lessonRequest = LessonRequest.builder()
+                        .lessonId(request.getLessonId())
+                        .userId(request.getUserId())
+                        .info(request.getInfo())
+                        .build();
+                lessonRequest.setVerifyId(request.getUserId());
+                lessonService.updateLessonInfo(lessonRequest);
+                return RestUtil.buildSuccessResult(null, "课程介绍修改成功");
+            }
+        });
+    }
+
+    @CheckLogin
+    @PutMapping("/pic")
+    public ZCMUResult<Void> updateLessonPic(LessonRestRequest request, HttpServletRequest httpServletRequest
+            , @PathParam("picFile") MultipartFile picFile) {
+        return OperateTemplate.operate(log, "修改课程封面", request, httpServletRequest, new OperateCallBack<Void>() {
+            @Override
+            public void before() {
+                AssertUtil.assertNotNull(request, ExceptionResultCode.ILLEGAL_PARAMETERS, "请求不能为空");
+                AssertUtil.assertNotNull(httpServletRequest, ExceptionResultCode.ILLEGAL_PARAMETERS, "请求不能为空");
+                AssertUtil.assertNotNull(request.getLessonId(), ExceptionResultCode.ILLEGAL_PARAMETERS, "课程id不能为空");
+                AssertUtil.assertNotNull(picFile, ExceptionResultCode.ILLEGAL_PARAMETERS, "课程封面文件不能为空");
+                AssertUtil.assertNotNull(request.getUserId(), ExceptionResultCode.UNAUTHORIZED, "用户未登录");
+            }
+
+            @Override
+            public ZCMUResult<Void> operate(){
+                LessonRequest lessonRequest = LessonRequest.builder()
+                        .lessonId(request.getLessonId())
+                        .userId(request.getUserId())
+                        .picFile(picFile)
+                        .build();
+                lessonRequest.setVerifyId(request.getUserId());
+                lessonService.updateLessonPic(lessonRequest);
+                return RestUtil.buildSuccessResult(null, "课程封面修改成功");
+            }
+        });
+    }
+
+    @CheckLogin
+    @PutMapping("/passage/name")
+    public ZCMUResult<Void> updatePassageName(LessonRestRequest request, HttpServletRequest httpServletRequest) {
+        return OperateTemplate.operate(log, "修改课程章节名称", request, httpServletRequest, new OperateCallBack<Void>() {
+            @Override
+            public void before() {
+                AssertUtil.assertNotNull(request, ExceptionResultCode.ILLEGAL_PARAMETERS, "请求不能为空");
+                AssertUtil.assertNotNull(httpServletRequest, ExceptionResultCode.ILLEGAL_PARAMETERS, "请求不能为空");
+                AssertUtil.assertNotNull(request.getPassageId(), ExceptionResultCode.ILLEGAL_PARAMETERS, "课程章节id不能为空");
+                AssertUtil.assertNotNull(request.getName(), ExceptionResultCode.ILLEGAL_PARAMETERS, "新章节名不能为空");
+                AssertUtil.assertNotNull(request.getUserId(), ExceptionResultCode.UNAUTHORIZED, "用户未登录");
+            }
+
+            @Override
+            public ZCMUResult<Void> operate(){
+                LessonRequest lessonRequest = LessonRequest.builder()
+                        .passageId(request.getPassageId())
+                        .userId(request.getUserId())
+                        .name(request.getName())
+                        .build();
+                lessonRequest.setVerifyId(request.getUserId());
+                lessonService.updatePassageLessonName(lessonRequest);
+                return RestUtil.buildSuccessResult(null, "课程章节名称修改成功");
+            }
+        });
+    }
+
+    @CheckLogin
+    @DeleteMapping
+    public ZCMUResult<Void> deleteLesson(LessonRestRequest request, HttpServletRequest httpServletRequest) {
+        return OperateTemplate.operate(log, "删除课程", request, httpServletRequest, new OperateCallBack<Void>() {
+            @Override
+            public void before() {
+                AssertUtil.assertNotNull(request, ExceptionResultCode.ILLEGAL_PARAMETERS, "请求不能为空");
+                AssertUtil.assertNotNull(httpServletRequest, ExceptionResultCode.ILLEGAL_PARAMETERS, "请求不能为空");
+                AssertUtil.assertNotNull(request.getLessonId(), ExceptionResultCode.ILLEGAL_PARAMETERS, "删除的课程id不能为空");
+                AssertUtil.assertNotNull(request.getUserId(), ExceptionResultCode.UNAUTHORIZED, "用户未登录");
+            }
+
+            @Override
+            public ZCMUResult<Void> operate(){
+                LessonRequest lessonRequest = LessonRequest.builder()
+                        .lessonId(request.getLessonId())
+                        .userId(request.getUserId())
+                        .build();
+                lessonRequest.setVerifyId(request.getUserId());
+                lessonService.deleteLesson(lessonRequest);
+                return RestUtil.buildSuccessResult(null, "课程删除成功");
+            }
+        });
+    }
+
+    @CheckLogin
+    @DeleteMapping("/passage")
+    public ZCMUResult<Void> deletePassage(LessonRestRequest request, HttpServletRequest httpServletRequest) {
+        return OperateTemplate.operate(log, "删除课程章节", request, httpServletRequest, new OperateCallBack<Void>() {
+            @Override
+            public void before() {
+                AssertUtil.assertNotNull(request, ExceptionResultCode.ILLEGAL_PARAMETERS, "请求不能为空");
+                AssertUtil.assertNotNull(httpServletRequest, ExceptionResultCode.ILLEGAL_PARAMETERS, "请求不能为空");
+                AssertUtil.assertNotNull(request.getPassageId(), ExceptionResultCode.ILLEGAL_PARAMETERS, "要删除的章节id不能为空");
+                AssertUtil.assertNotNull(request.getUserId(), ExceptionResultCode.UNAUTHORIZED, "用户未登录");
+            }
+
+            @Override
+            public ZCMUResult<Void> operate() throws IOException {
+                LessonRequest lessonRequest = LessonRequest.builder()
+                        .passageId(request.getPassageId())
+                        .userId(request.getUserId())
+                        .build();
+                lessonRequest.setVerifyId(request.getUserId());
+                lessonService.deletePassage(lessonRequest);
+                return RestUtil.buildSuccessResult(null, "课程章节删除成功");
             }
         });
     }

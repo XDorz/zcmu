@@ -38,7 +38,7 @@ public class UserController {
     @PostMapping("/batchregister")
     public ZCMUResult<String> register(UserRestRequest request, HttpServletRequest httpServletRequest
             , @PathParam("userExcel") MultipartFile userExcel){
-        return OperateTemplate.operate(log, "excel学生批量注册", request, httpServletRequest, new OperateCallBack<String>() {
+        return OperateTemplate.operate(log, "学生excel批量注册", request, httpServletRequest, new OperateCallBack<String>() {
             @Override
             public void before() {
                 AssertUtil.assertNotNull(request, ExceptionResultCode.ILLEGAL_PARAMETERS,"请求不能为空");
@@ -53,6 +53,34 @@ public class UserController {
                         .build();
                 userRequest.setVerifyId(request.getUserId());
                 String result = userService.register(userRequest, PermEnum.STUDENT);
+                if(result==null){
+                    return RestUtil.buildSuccessResult("本次批量注册成功","未发现错误");
+                }else {
+                    return RestUtil.buildFailResult("批量注册失败，本次没有账号被注册\n"+result);
+                }
+            }
+        });
+    }
+
+    @CheckLogin
+    @PostMapping("/teacher/batchregister")
+    public ZCMUResult<String> registerTeacher(UserRestRequest request, HttpServletRequest httpServletRequest
+            , @PathParam("userExcel") MultipartFile userExcel){
+        return OperateTemplate.operate(log, "教师excel批量注册", request, httpServletRequest, new OperateCallBack<String>() {
+            @Override
+            public void before() {
+                AssertUtil.assertNotNull(request, ExceptionResultCode.ILLEGAL_PARAMETERS,"请求不能为空");
+                AssertUtil.assertNotNull(httpServletRequest,ExceptionResultCode.ILLEGAL_PARAMETERS,"请求不能为空");
+                AssertUtil.assertNotNull(userExcel,ExceptionResultCode.ILLEGAL_PARAMETERS,"请传入用户名册");
+            }
+
+            @Override
+            public ZCMUResult<String> operate() throws IOException {
+                UserRequest userRequest = UserRequest.builder()
+                        .userExcelFile(userExcel)
+                        .build();
+                userRequest.setVerifyId(request.getUserId());
+                String result = userService.register(userRequest, PermEnum.TEACHER);
                 if(result==null){
                     return RestUtil.buildSuccessResult("本次批量注册成功","未发现错误");
                 }else {

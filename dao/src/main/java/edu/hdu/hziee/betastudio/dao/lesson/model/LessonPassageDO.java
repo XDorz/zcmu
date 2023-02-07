@@ -27,7 +27,7 @@ public class LessonPassageDO extends BasicModel {
     @Column(name="lesson_id",updatable = false,nullable = false,unique = false,columnDefinition = "bigint(20) comment '关联的课程id'")
     private Long lessonId;
 
-    @Column(name="name",updatable = true,nullable = false,unique = false,columnDefinition = "varchar(32) comment '作业名'")
+    @Column(name="passage_name",updatable = true,nullable = false,unique = false,columnDefinition = "varchar(32) comment '作业名'")
     private String name;
 
     @Column(name = "deleted",updatable = true,nullable = false,unique = false,columnDefinition = "bit(1) default false comment '是否已经删除'")

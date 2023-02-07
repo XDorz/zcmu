@@ -26,6 +26,9 @@ public class AppUserInfoBO {
     @ApiModelProperty(name = "用户头像")
     private String picUrl;
 
+    @ApiModelProperty(name = "用户性别")
+    private String sex;
+
     @ApiModelProperty(name = "其他信息")
     private Map<String,String> ext;
 

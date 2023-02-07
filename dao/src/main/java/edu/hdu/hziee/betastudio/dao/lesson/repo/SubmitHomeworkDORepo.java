@@ -22,4 +22,8 @@ public interface SubmitHomeworkDORepo extends JpaRepository<SubmitHomeworkDO,Lon
     @Modifying
     @Query(value = "update submit_homework set score=?2 where submit_id=?1",nativeQuery = true)
     Integer scoreHomework(Long submitHomeworkId,int score);
+
+    @Modifying
+    @Query(value = "update submit_homework set content=?2 where submit_id=?1",nativeQuery = true)
+    Integer updateContent(Long submitHomeworkId,String content);
 }

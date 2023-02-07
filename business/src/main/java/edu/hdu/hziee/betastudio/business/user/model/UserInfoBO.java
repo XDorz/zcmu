@@ -26,6 +26,10 @@ public class UserInfoBO {
     @ApiModelProperty(name = "学号")
     private Long stuId;
 
+    @ExcelProperty({"工号"})
+    @ApiModelProperty(name = "工号，导入教师表时用，其余时间无用")
+    private Long workId;
+
     @ExcelProperty({"电子邮箱"})
     @ApiModelProperty(name = "电子邮箱")
     private String email;
@@ -94,3 +98,4 @@ public class UserInfoBO {
     @Tolerate
     public UserInfoBO(){}
 }
+

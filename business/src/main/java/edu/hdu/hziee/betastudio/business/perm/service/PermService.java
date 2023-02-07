@@ -25,4 +25,6 @@ public interface PermService {
     List<PermBO> getAllPerm(UserPermRequest request);
 
     List<List<PermBO>> getAllUserPermInfo(UserPermRequest request);
+
+    List<PermBO> getUserPermInfo(UserPermRequest request);
 }

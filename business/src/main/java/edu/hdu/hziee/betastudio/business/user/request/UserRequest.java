@@ -36,4 +36,6 @@ public class UserRequest extends PermRequest {
 
     private MultipartFile userExcelFile;
 
+    private byte[] picByte;
+
 }

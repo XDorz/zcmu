@@ -5,6 +5,7 @@ import edu.hdu.hziee.betastudio.business.lesson.model.SubmitHomeworkBO;
 import edu.hdu.hziee.betastudio.business.lesson.request.HomeworkRequest;
 import edu.hdu.hziee.betastudio.business.user.model.AppUserInfoBO;
 import edu.hdu.hziee.betastudio.util.customenum.HomeworkStatusEnum;
+import io.swagger.models.auth.In;
 
 import java.util.List;
 
@@ -43,4 +44,6 @@ public interface HomeworkService {
     Integer deleteHomework(HomeworkRequest request);
 
     Integer updateSubHomeworkContent(HomeworkRequest request);
+
+    void updateSubHomeworkResource(HomeworkRequest request);
 }

@@ -38,4 +38,7 @@ public class HomeworkRequest extends PermRequest {
 
     //资源id列表
     private List<Long> resourceList;
+
+    //要删除的资源id列表
+    private List<Long> deletedResourceList;
 }

@@ -18,6 +18,9 @@ public class ThemeBO {
     @ApiModelProperty(name = "主题id")
     private Long themeId;
 
+    @ApiModelProperty(name = "主题名称")
+    private String themeName;
+
     @ApiModelProperty(name = "发布人id")
     private Long userId;
 
@@ -33,6 +36,10 @@ public class ThemeBO {
     //一评论10热度，一浏览1热度
     @ApiModelProperty(name = "主题热度")
     private int hot;
+
+    //一订阅量8热度
+    @ApiModelProperty(name = "帖子关注度(订阅数量)")
+    private int subscribed;
 
     //评论量
     @ApiModelProperty(name = "主题评论量")

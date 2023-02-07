@@ -8,7 +8,9 @@ import edu.hdu.hziee.betastudio.business.comment.service.CommentService;
 import edu.hdu.hziee.betastudio.business.comment.service.ThemeService;
 import edu.hdu.hziee.betastudio.util.common.AssertUtil;
 import edu.hdu.hziee.betastudio.util.common.IpUtil;
+import edu.hdu.hziee.betastudio.util.customenum.ClientTypeEnum;
 import edu.hdu.hziee.betastudio.util.customenum.ExceptionResultCode;
+import edu.hdu.hziee.betastudio.util.customenum.basic.EnumUtil;
 import edu.hdu.hziee.betastudio.util.resulttemplate.OperateCallBack;
 import edu.hdu.hziee.betastudio.util.resulttemplate.OperateTemplate;
 import edu.hdu.hziee.betastudio.util.resulttemplate.restfulresult.RestUtil;
@@ -45,6 +47,8 @@ public class CommentController {
                 AssertUtil.assertNotNull(request.getThemeTitle(), ExceptionResultCode.ILLEGAL_PARAMETERS,"主题标题不能为空");
                 AssertUtil.assertTrue(StringUtils.hasText(request.getContent()), ExceptionResultCode.ILLEGAL_PARAMETERS,"评论内容不能为空");
                 AssertUtil.assertNotNull(request.getClientType(), ExceptionResultCode.ILLEGAL_PARAMETERS,"客户端类型不能为空");
+                AssertUtil.assertTrue(EnumUtil.isExist(ClientTypeEnum.class,request.getClientType())
+                        ,ExceptionResultCode.FORBIDDEN,"非法的客户端类型！");
                 AssertUtil.assertNotNull(request.getUserId(),ExceptionResultCode.UNAUTHORIZED,"用户未登录");
             }
 
@@ -60,6 +64,28 @@ public class CommentController {
                         .build();
                 commentRequest.setVerifyId(request.getUserId());
                 return RestUtil.buildSuccessResult(themeService.createTheme(commentRequest),"创建主题帖成功");
+            }
+        });
+    }
+
+    @CheckLogin
+    @GetMapping("/theme/own")
+    public ZCMUResult<List<SimpleThemeBO>> browserSelfTheme(CommentRestRequest request, HttpServletRequest httpServletRequest){
+        return OperateTemplate.operate(log, "查看自己发布的的主题帖", request, httpServletRequest, new OperateCallBack<List<SimpleThemeBO>>() {
+            @Override
+            public void before() {
+                AssertUtil.assertNotNull(request, ExceptionResultCode.ILLEGAL_PARAMETERS,"请求不能为空");
+                AssertUtil.assertNotNull(httpServletRequest,ExceptionResultCode.ILLEGAL_PARAMETERS,"请求不能为空");
+                AssertUtil.assertNotNull(request.getUserId(),ExceptionResultCode.UNAUTHORIZED,"用户未登录");
+            }
+
+            @Override
+            public ZCMUResult<List<SimpleThemeBO>> operate() {
+                CommentRequest commentRequest = CommentRequest.builder()
+                        .userId(request.getUserId())
+                        .build();
+                commentRequest.setVerifyId(request.getUserId());
+                return RestUtil.buildSuccessResult(themeService.getAllSelfTheme(commentRequest),"获取创建的主题帖成功");
             }
         });
     }
@@ -109,7 +135,7 @@ public class CommentController {
     }
 
     @CheckLogin
-    @GetMapping("/theme/hot")
+    @PutMapping("/theme/hot")
     public ZCMUResult<Void> increaseThemeHot(CommentRestRequest request, HttpServletRequest httpServletRequest){
         return OperateTemplate.operate(log, "提升一个主题帖的热度", request, httpServletRequest, new OperateCallBack<Void>() {
             @Override
@@ -150,6 +176,7 @@ public class CommentController {
             public ZCMUResult<Void> operate() {
                 CommentRequest commentRequest = CommentRequest.builder()
                         .themeId(request.getThemeId())
+                        .userId(request.getUserId())
                         .build();
                 commentRequest.setVerifyId(request.getUserId());
                 themeService.deleteTheme(commentRequest);
@@ -185,6 +212,78 @@ public class CommentController {
                         .build();
                 commentRequest.setVerifyId(request.getUserId());
                 return RestUtil.buildSuccessResult(commentService.createComment(commentRequest),"评论发布成功");
+            }
+        });
+    }
+
+    @CheckLogin
+    @PutMapping("/theme/subscribe")
+    public ZCMUResult<Void> subscribeTheme(CommentRestRequest request, HttpServletRequest httpServletRequest){
+        return OperateTemplate.operate(log, "订阅某个主题", request, httpServletRequest, new OperateCallBack<Void>() {
+            @Override
+            public void before() {
+                AssertUtil.assertNotNull(request, ExceptionResultCode.ILLEGAL_PARAMETERS,"请求不能为空");
+                AssertUtil.assertNotNull(httpServletRequest,ExceptionResultCode.ILLEGAL_PARAMETERS,"请求不能为空");
+                AssertUtil.assertNotNull(request.getThemeId(), ExceptionResultCode.ILLEGAL_PARAMETERS,"订阅的主题id不能为空");
+                AssertUtil.assertNotNull(request.getUserId(),ExceptionResultCode.UNAUTHORIZED,"用户未登录");
+            }
+
+            @Override
+            public ZCMUResult<Void> operate() {
+                CommentRequest commentRequest = CommentRequest.builder()
+                        .themeId(request.getThemeId())
+                        .userId(request.getUserId())
+                        .build();
+                commentRequest.setVerifyId(request.getUserId());
+                themeService.subscribeTheme(commentRequest);
+                return RestUtil.buildSuccessResult(null,"主题订阅成功");
+            }
+        });
+    }
+
+    @CheckLogin
+    @PutMapping("/theme/unsubscribe")
+    public ZCMUResult<Void> unSubscribeTheme(CommentRestRequest request, HttpServletRequest httpServletRequest){
+        return OperateTemplate.operate(log, "取消订阅某个主题", request, httpServletRequest, new OperateCallBack<Void>() {
+            @Override
+            public void before() {
+                AssertUtil.assertNotNull(request, ExceptionResultCode.ILLEGAL_PARAMETERS,"请求不能为空");
+                AssertUtil.assertNotNull(httpServletRequest,ExceptionResultCode.ILLEGAL_PARAMETERS,"请求不能为空");
+                AssertUtil.assertNotNull(request.getThemeId(), ExceptionResultCode.ILLEGAL_PARAMETERS,"取消订阅的主题id不能为空");
+                AssertUtil.assertNotNull(request.getUserId(),ExceptionResultCode.UNAUTHORIZED,"用户未登录");
+            }
+
+            @Override
+            public ZCMUResult<Void> operate() {
+                CommentRequest commentRequest = CommentRequest.builder()
+                        .themeId(request.getThemeId())
+                        .userId(request.getUserId())
+                        .build();
+                commentRequest.setVerifyId(request.getUserId());
+                themeService.unSubscribeTheme(commentRequest);
+                return RestUtil.buildSuccessResult(null,"主题订阅取消成功");
+            }
+        });
+    }
+
+    @CheckLogin
+    @GetMapping("/theme/subscribed")
+    public ZCMUResult<List<SimpleThemeBO>> subscribedTheme(CommentRestRequest request, HttpServletRequest httpServletRequest){
+        return OperateTemplate.operate(log, "获取所有订阅的主题", request, httpServletRequest, new OperateCallBack<List<SimpleThemeBO>>() {
+            @Override
+            public void before() {
+                AssertUtil.assertNotNull(request, ExceptionResultCode.ILLEGAL_PARAMETERS,"请求不能为空");
+                AssertUtil.assertNotNull(httpServletRequest,ExceptionResultCode.ILLEGAL_PARAMETERS,"请求不能为空");
+                AssertUtil.assertNotNull(request.getUserId(),ExceptionResultCode.UNAUTHORIZED,"用户未登录");
+            }
+
+            @Override
+            public ZCMUResult<List<SimpleThemeBO>> operate() {
+                CommentRequest commentRequest = CommentRequest.builder()
+                        .userId(request.getUserId())
+                        .build();
+                commentRequest.setVerifyId(request.getUserId());
+                return RestUtil.buildSuccessResult(themeService.getSubscribeThemes(commentRequest),"主题订阅获取成功");
             }
         });
     }
@@ -243,6 +342,33 @@ public class CommentController {
         });
     }
 
+    @CheckLogin
+    @PutMapping("/theme/title")
+    public ZCMUResult<Void> updateThemeTitle(CommentRestRequest request, HttpServletRequest httpServletRequest){
+        return OperateTemplate.operate(log, "修改主题帖标题", request, httpServletRequest, new OperateCallBack<Void>() {
+            @Override
+            public void before() {
+                AssertUtil.assertNotNull(request, ExceptionResultCode.ILLEGAL_PARAMETERS,"请求不能为空");
+                AssertUtil.assertNotNull(httpServletRequest,ExceptionResultCode.ILLEGAL_PARAMETERS,"请求不能为空");
+                AssertUtil.assertNotNull(request.getThemeId(), ExceptionResultCode.ILLEGAL_PARAMETERS,"要修改的主题id不能为空");
+                AssertUtil.assertNotNull(request.getThemeTitle(), ExceptionResultCode.ILLEGAL_PARAMETERS,"新的主题标题不能为空");
+                AssertUtil.assertNotNull(request.getUserId(),ExceptionResultCode.UNAUTHORIZED,"用户未登录");
+            }
+
+            @Override
+            public ZCMUResult<Void> operate() {
+                CommentRequest commentRequest = CommentRequest.builder()
+                        .themeId(request.getThemeId())
+                        .userId(request.getUserId())
+                        .themeTitle(request.getThemeTitle())
+                        .build();
+                commentRequest.setVerifyId(request.getUserId());
+                themeService.updateThemeName(commentRequest);
+                return RestUtil.buildSuccessResult(null,"主题帖标题修改成功");
+            }
+        });
+    }
+
     /**
      * 【也许不需要这个接口？】
      */
@@ -264,6 +390,7 @@ public class CommentController {
                 CommentRequest commentRequest = CommentRequest.builder()
                         .commentId(request.getCommentId())
                         .content(request.getContent())
+                        .userId(request.getUserId())
                         .build();
                 commentRequest.setVerifyId(request.getUserId());
                 commentService.updateContent(commentRequest);
@@ -291,6 +418,7 @@ public class CommentController {
             public ZCMUResult<Void> operate() {
                 CommentRequest commentRequest = CommentRequest.builder()
                         .commentId(request.getCommentId())
+                        .userId(request.getUserId())
                         .build();
                 commentRequest.setVerifyId(request.getUserId());
                 commentService.deleteComment(commentRequest);
@@ -298,5 +426,4 @@ public class CommentController {
             }
         });
     }
-
 }

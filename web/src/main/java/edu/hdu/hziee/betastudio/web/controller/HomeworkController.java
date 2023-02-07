@@ -51,7 +51,7 @@ public class HomeworkController {
             }
 
             @Override
-            public ZCMUResult<HomeworkBO> operate() throws IOException {
+            public ZCMUResult<HomeworkBO> operate(){
                 HomeworkRequest homeworkRequest = HomeworkRequest.builder()
                         .lessonId(request.getLessonId())
                         .userId(request.getUserId())
@@ -84,7 +84,7 @@ public class HomeworkController {
             }
 
             @Override
-            public ZCMUResult<List<HomeworkBO>> operate() throws IOException {
+            public ZCMUResult<List<HomeworkBO>> operate(){
                 HomeworkRequest homeworkRequest = HomeworkRequest.builder()
                         .lessonId(request.getLessonId())
                         .userId(request.getUserId())
@@ -108,7 +108,7 @@ public class HomeworkController {
             }
 
             @Override
-            public ZCMUResult<SubmitHomeworkBO> operate() throws IOException {
+            public ZCMUResult<SubmitHomeworkBO> operate(){
                 HomeworkRequest homeworkRequest = HomeworkRequest.builder()
                         .homeworkId(request.getHomeworkId())
                         .userId(request.getUserId())
@@ -134,7 +134,7 @@ public class HomeworkController {
             }
 
             @Override
-            public ZCMUResult<List<SubmitHomeworkBO>> operate() throws IOException {
+            public ZCMUResult<List<SubmitHomeworkBO>> operate(){
                 HomeworkRequest homeworkRequest = HomeworkRequest.builder()
                         .homeworkId(request.getHomeworkId())
                         .userId(request.getUserId())
@@ -158,7 +158,7 @@ public class HomeworkController {
             }
 
             @Override
-            public ZCMUResult<SubmitHomeworkBO> operate() throws IOException {
+            public ZCMUResult<SubmitHomeworkBO> operate(){
                 HomeworkRequest homeworkRequest = HomeworkRequest.builder()
                         .homeworkId(request.getHomeworkId())
                         .userId(request.getUserId())
@@ -182,7 +182,7 @@ public class HomeworkController {
             }
 
             @Override
-            public ZCMUResult<List<AppUserInfoBO>> operate() throws IOException {
+            public ZCMUResult<List<AppUserInfoBO>> operate(){
                 HomeworkRequest homeworkRequest = HomeworkRequest.builder()
                         .homeworkId(request.getHomeworkId())
                         .userId(request.getUserId())
@@ -207,7 +207,7 @@ public class HomeworkController {
             }
 
             @Override
-            public ZCMUResult<Void> operate() throws IOException {
+            public ZCMUResult<Void> operate(){
                 HomeworkRequest homeworkRequest = HomeworkRequest.builder()
                         .submitHomeworkId(request.getSubmitHomeworkId())
                         .score(request.getScore())
@@ -220,5 +220,167 @@ public class HomeworkController {
         });
     }
 
+    @CheckLogin
+    @PutMapping("/name")
+    public ZCMUResult<Void> updateHomeworkName(HomeworkRestRequest request, HttpServletRequest httpServletRequest) {
+        return OperateTemplate.operate(log, "修改作业名称", request, httpServletRequest, new OperateCallBack<Void>() {
+            @Override
+            public void before() {
+                AssertUtil.assertNotNull(request, ExceptionResultCode.ILLEGAL_PARAMETERS, "请求不能为空");
+                AssertUtil.assertNotNull(httpServletRequest, ExceptionResultCode.ILLEGAL_PARAMETERS, "请求不能为空");
+                AssertUtil.assertNotNull(request.getHomeworkId(), ExceptionResultCode.ILLEGAL_PARAMETERS, "修改的作业id不能为空");
+                AssertUtil.assertNotNull(request.getName(), ExceptionResultCode.ILLEGAL_PARAMETERS, "修改的作业名称不能为空");
+                AssertUtil.assertNotNull(request.getUserId(), ExceptionResultCode.UNAUTHORIZED, "用户未登录");
+            }
 
+            @Override
+            public ZCMUResult<Void> operate(){
+                HomeworkRequest homeworkRequest = HomeworkRequest.builder()
+                        .homeworkId(request.getHomeworkId())
+                        .name(request.getName())
+                        .userId(request.getUserId())
+                        .build();
+                homeworkRequest.setVerifyId(request.getUserId());
+                homeworkService.updateHomeworkName(homeworkRequest);
+                return RestUtil.buildSuccessResult(null, "作业名称修改成功！");
+            }
+        });
+    }
+
+    @CheckLogin
+    @PutMapping("/info")
+    public ZCMUResult<Void> updateHomeworkInfo(HomeworkRestRequest request, HttpServletRequest httpServletRequest) {
+        return OperateTemplate.operate(log, "修改作业要求", request, httpServletRequest, new OperateCallBack<Void>() {
+            @Override
+            public void before() {
+                AssertUtil.assertNotNull(request, ExceptionResultCode.ILLEGAL_PARAMETERS, "请求不能为空");
+                AssertUtil.assertNotNull(httpServletRequest, ExceptionResultCode.ILLEGAL_PARAMETERS, "请求不能为空");
+                AssertUtil.assertNotNull(request.getHomeworkId(), ExceptionResultCode.ILLEGAL_PARAMETERS, "修改的作业id不能为空");
+                AssertUtil.assertNotNull(request.getInfo(), ExceptionResultCode.ILLEGAL_PARAMETERS, "修改的作业要求能为空");
+                AssertUtil.assertNotNull(request.getUserId(), ExceptionResultCode.UNAUTHORIZED, "用户未登录");
+            }
+
+            @Override
+            public ZCMUResult<Void> operate(){
+                HomeworkRequest homeworkRequest = HomeworkRequest.builder()
+                        .homeworkId(request.getHomeworkId())
+                        .info(request.getInfo())
+                        .userId(request.getUserId())
+                        .build();
+                homeworkRequest.setVerifyId(request.getUserId());
+                homeworkService.updateHomeworkInfo(homeworkRequest);
+                return RestUtil.buildSuccessResult(null, "作业要求修改成功！");
+            }
+        });
+    }
+
+    @CheckLogin
+    @PutMapping("/time")
+    public ZCMUResult<Void> updateHomeworkTime(HomeworkRestRequest request, HttpServletRequest httpServletRequest) {
+        return OperateTemplate.operate(log, "修改作业起止时间", request, httpServletRequest, new OperateCallBack<Void>() {
+            @Override
+            public void before() {
+                AssertUtil.assertNotNull(request, ExceptionResultCode.ILLEGAL_PARAMETERS, "请求不能为空");
+                AssertUtil.assertNotNull(httpServletRequest, ExceptionResultCode.ILLEGAL_PARAMETERS, "请求不能为空");
+                AssertUtil.assertNotNull(request.getHomeworkId(), ExceptionResultCode.ILLEGAL_PARAMETERS, "修改的作业id不能为空");
+                AssertUtil.assertNotNull(request.getStart(), ExceptionResultCode.ILLEGAL_PARAMETERS, "修改的作业开始时间不能为空");
+                AssertUtil.assertNotNull(request.getEnd(), ExceptionResultCode.ILLEGAL_PARAMETERS, "修改的作业结束时间不能为空");
+                Date start=new Date(request.getStart());
+                Date end=new Date(request.getEnd());
+                AssertUtil.assertTrue(start.before(end),ExceptionResultCode.ILLEGAL_PARAMETERS,"修改的作业开始时间不能比结束时间晚");
+                AssertUtil.assertNotNull(request.getUserId(), ExceptionResultCode.UNAUTHORIZED, "用户未登录");
+            }
+
+            @Override
+            public ZCMUResult<Void> operate(){
+                HomeworkRequest homeworkRequest = HomeworkRequest.builder()
+                        .homeworkId(request.getHomeworkId())
+                        .start(new Date(request.getStart()))
+                        .end(new Date(request.getEnd()))
+                        .userId(request.getUserId())
+                        .build();
+                homeworkRequest.setVerifyId(request.getUserId());
+                homeworkService.updateHomeworkTime(homeworkRequest);
+                return RestUtil.buildSuccessResult(null, "作业起止时间修改成功！");
+            }
+        });
+    }
+
+    @CheckLogin
+    @DeleteMapping
+    public ZCMUResult<Void> deleteHomework(HomeworkRestRequest request, HttpServletRequest httpServletRequest) {
+        return OperateTemplate.operate(log, "撤销作业", request, httpServletRequest, new OperateCallBack<Void>() {
+            @Override
+            public void before() {
+                AssertUtil.assertNotNull(request, ExceptionResultCode.ILLEGAL_PARAMETERS, "请求不能为空");
+                AssertUtil.assertNotNull(httpServletRequest, ExceptionResultCode.ILLEGAL_PARAMETERS, "请求不能为空");
+                AssertUtil.assertNotNull(request.getHomeworkId(), ExceptionResultCode.ILLEGAL_PARAMETERS, "撤销的作业id不能为空");
+                AssertUtil.assertNotNull(request.getUserId(), ExceptionResultCode.UNAUTHORIZED, "用户未登录");
+            }
+
+            @Override
+            public ZCMUResult<Void> operate(){
+                HomeworkRequest homeworkRequest = HomeworkRequest.builder()
+                        .homeworkId(request.getHomeworkId())
+                        .userId(request.getUserId())
+                        .build();
+                homeworkRequest.setVerifyId(request.getUserId());
+                homeworkService.deleteHomework(homeworkRequest);
+                return RestUtil.buildSuccessResult(null, "作业撤销成功！");
+            }
+        });
+    }
+
+    @CheckLogin
+    @PutMapping("/sub/content")
+    public ZCMUResult<Void> updateSubHomeworkContent(HomeworkRestRequest request, HttpServletRequest httpServletRequest) {
+        return OperateTemplate.operate(log, "修改提交的作业内容", request, httpServletRequest, new OperateCallBack<Void>() {
+            @Override
+            public void before() {
+                AssertUtil.assertNotNull(request, ExceptionResultCode.ILLEGAL_PARAMETERS, "请求不能为空");
+                AssertUtil.assertNotNull(httpServletRequest, ExceptionResultCode.ILLEGAL_PARAMETERS, "请求不能为空");
+                AssertUtil.assertNotNull(request.getSubmitHomeworkId(), ExceptionResultCode.ILLEGAL_PARAMETERS, "提交作业id不能为空");
+                AssertUtil.assertNotNull(request.getUserId(), ExceptionResultCode.UNAUTHORIZED, "用户未登录");
+            }
+
+            @Override
+            public ZCMUResult<Void> operate(){
+                HomeworkRequest homeworkRequest = HomeworkRequest.builder()
+                        .submitHomeworkId(request.getSubmitHomeworkId())
+                        .content(request.getContent())
+                        .userId(request.getUserId())
+                        .build();
+                homeworkRequest.setVerifyId(request.getUserId());
+                homeworkService.updateSubHomeworkContent(homeworkRequest);
+                return RestUtil.buildSuccessResult(null, "回答修改成功！");
+            }
+        });
+    }
+
+    @CheckLogin
+    @PutMapping("/sub/resource")
+    public ZCMUResult<Void> updateSubHomeworkResource(HomeworkRestRequest request, HttpServletRequest httpServletRequest) {
+        return OperateTemplate.operate(log, "修改提交的作业的附件", request, httpServletRequest, new OperateCallBack<Void>() {
+            @Override
+            public void before() {
+                AssertUtil.assertNotNull(request, ExceptionResultCode.ILLEGAL_PARAMETERS, "请求不能为空");
+                AssertUtil.assertNotNull(httpServletRequest, ExceptionResultCode.ILLEGAL_PARAMETERS, "请求不能为空");
+                AssertUtil.assertNotNull(request.getSubmitHomeworkId(), ExceptionResultCode.ILLEGAL_PARAMETERS, "提交作业id不能为空");
+                AssertUtil.assertNotNull(request.getUserId(), ExceptionResultCode.UNAUTHORIZED, "用户未登录");
+            }
+
+            @Override
+            public ZCMUResult<Void> operate(){
+                HomeworkRequest homeworkRequest = HomeworkRequest.builder()
+                        .submitHomeworkId(request.getSubmitHomeworkId())
+                        .deletedResourceList(request.getDeletedResourceList())
+                        .resourceList(request.getResourceList())
+                        .userId(request.getUserId())
+                        .build();
+                homeworkRequest.setVerifyId(request.getUserId());
+                homeworkService.updateSubHomeworkResource(homeworkRequest);
+                return RestUtil.buildSuccessResult(null, "附件修改成功");
+            }
+        });
+    }
 }

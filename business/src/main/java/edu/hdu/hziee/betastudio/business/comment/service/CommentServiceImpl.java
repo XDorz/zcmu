@@ -6,11 +6,11 @@ import edu.hdu.hziee.betastudio.business.comment.model.CommentBO;
 import edu.hdu.hziee.betastudio.business.comment.request.CommentRequest;
 import edu.hdu.hziee.betastudio.business.perm.request.UserPermRequest;
 import edu.hdu.hziee.betastudio.business.perm.service.PermService;
+import edu.hdu.hziee.betastudio.business.perm.verify.VerifyOperate;
 import edu.hdu.hziee.betastudio.dao.comment.model.CommentDO;
 import edu.hdu.hziee.betastudio.dao.comment.model.ThemeDO;
 import edu.hdu.hziee.betastudio.dao.comment.repo.CommentDORepo;
 import edu.hdu.hziee.betastudio.dao.comment.repo.ThemeDORepo;
-import edu.hdu.hziee.betastudio.dao.perm.repo.PermDORepo;
 import edu.hdu.hziee.betastudio.util.common.AssertUtil;
 import edu.hdu.hziee.betastudio.util.common.CollectionUtils;
 import edu.hdu.hziee.betastudio.util.customenum.ClientTypeEnum;
@@ -42,12 +42,15 @@ public class CommentServiceImpl implements CommentService {
     @Autowired
     private PermService permService;
 
-    @Autowired
-    private PermDORepo permDORepo;
-
     @Lazy
     @Autowired
     private ThemeService themeService;
+
+    @Autowired
+    private void setVerify(VerifyOperate verifyOperate){
+        this.verifyOperate=verifyOperate.getInstance(this::customVerify);
+    }
+    private VerifyOperate verifyOperate;
 
     @Override
     public CommentBO findComment(Long commentId) {
@@ -61,7 +64,7 @@ public class CommentServiceImpl implements CommentService {
 
     @Override
     public List<CommentBO> findCommentList(Long themeId) {
-        List<CommentDO> commentDOList = commentDORepo.findAllByThemeIdAndDeleted(themeId, false);
+        List<CommentDO> commentDOList = commentDORepo.findAllByThemeIdAndMasterIdAndDeleted(themeId, null,false);
         return CollectionUtils.toStream(commentDOList)
                 .filter(Objects::nonNull)
                 .map(convert::convert)
@@ -70,6 +73,8 @@ public class CommentServiceImpl implements CommentService {
 
     @Override
     public List<CommentBO> findCommentList(CommentRequest request) {
+        ThemeDO themeDO = themeDORepo.findAllByThemeId(request.getThemeId());
+        AssertUtil.assertTrue(!themeDO.isDeleted(),ExceptionResultCode.FORBIDDEN,"该主题帖已被删除！");
         return findCommentList(request.getThemeId());
     }
 
@@ -88,7 +93,6 @@ public class CommentServiceImpl implements CommentService {
                 .ipAddr(request.getIpAddr())
                 .client_type(request.getClientType())
                 .themeId(request.getThemeId())
-                //todo 防止XSS攻击
                 .content(request.getContent())
                 .deleted(false)
                 .build();
@@ -117,7 +121,7 @@ public class CommentServiceImpl implements CommentService {
     public void deleteComment(CommentRequest request) {
         CommentDO commentDO = commentDORepo.findAllByCommentId(request.getCommentId());
         AssertUtil.assertNotNull(commentDO, ExceptionResultCode.ILLEGAL_PARAMETERS, "查无该评论！");
-        AssertUtil.assertTrue(verifyBelong(request.getUserId(),request.getCommentId()).hasPerm(OperateLevelEnum.MEDIUM_OPERATE)
+        AssertUtil.assertTrue(verifyOperate.verifyLevel(request.getVerifyId(),request.getCommentId()).hasPerm(OperateLevelEnum.MEDIUM_OPERATE)
                 ,ExceptionResultCode.FORBIDDEN,"您无权删除该评论！");
         AssertUtil.assertTrue(!commentDO.isDeleted(), ExceptionResultCode.ILLEGAL_PARAMETERS, "无法重复删除评论！");
 
@@ -134,15 +138,16 @@ public class CommentServiceImpl implements CommentService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void updateContent(CommentRequest request) {
-        AssertUtil.assertTrue(verifyBelong(request.getUserId(),request.getCommentId()).hasPerm(OperateLevelEnum.TOTAL_OPERATE)
+        AssertUtil.assertTrue(verifyOperate.verifyLevel(request.getVerifyId(),request.getCommentId()).hasPerm(OperateLevelEnum.TOTAL_OPERATE)
                 ,ExceptionResultCode.FORBIDDEN,"您无权修改该评论！");
         commentDORepo.updateContent(request.getCommentId(), request.getContent());
     }
 
-    private OperateLevelEnum verifyBelong(Long userId, Long commentId) {
-        if (userId == null || commentId == null) {
-            return OperateLevelEnum.FORBIDDEN;
-        }
+
+
+    //====================================以下为自定义鉴权与归属鉴定方法========================================
+
+    private OperateLevelEnum customVerify(Long userId,Long commentId){
         CommentDO commentDO = commentDORepo.findAllByCommentId(commentId);
         if (commentDO == null) {
             return OperateLevelEnum.FORBIDDEN;
@@ -159,16 +164,7 @@ public class CommentServiceImpl implements CommentService {
         if(userId.equals(themeDO.getUserId())){
             return OperateLevelEnum.MEDIUM_OPERATE;
         }
-
-        //总管理可以操作评论
-        UserPermRequest userPermRequest = UserPermRequest.builder()
-                .userId(userId)
-                .codeName(PermEnum.MANAGER.getCode())
-                .build();
-        userPermRequest.setSkipVerify(true);
-        if(permService.userExistPerm(userPermRequest)){
-            return OperateLevelEnum.MEDIUM_OPERATE;
-        }
-        return OperateLevelEnum.FORBIDDEN;
+        return null;
     }
+
 }

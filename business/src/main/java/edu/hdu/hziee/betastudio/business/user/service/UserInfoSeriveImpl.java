@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -36,7 +37,6 @@ public class UserInfoSeriveImpl implements UserInfoService{
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void updateUserName(UserRequest request) {
-        //todo 检测XSS攻击
         userInfoDORepo.updateUserName(request.getUserId(),request.getUserName());
     }
 
@@ -52,6 +52,14 @@ public class UserInfoSeriveImpl implements UserInfoService{
             throw new ZCMUException("图片保存失败");
         }
         String picUrl = cosUtil.uploadFile(picFile.getOriginalFilename(), picStream);
+        userInfoDORepo.updatePic(request.getUserId(),picUrl);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void updatePicByByte(UserRequest request) {
+        ByteArrayInputStream bin=new ByteArrayInputStream( request.getPicByte());
+        String picUrl = cosUtil.uploadFile("png", bin);
         userInfoDORepo.updatePic(request.getUserId(),picUrl);
     }
 }

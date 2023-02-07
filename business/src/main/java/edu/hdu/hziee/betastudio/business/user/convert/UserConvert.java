@@ -102,6 +102,7 @@ public class UserConvert {
                 .userId(userInfoDO.getUserId())
                 .userName(userInfoDO.getUserName())
                 .picUrl(userInfoDO.getPicUrl())
+                .sex(userInfoDO.getSex())
                 .ext(JSONObject.parseObject(userInfoDO.getExt()).toJavaObject(new TypeReference<Map<String, String>>() {
                 }))
                 .stuId(userInfoDO.getStuId())

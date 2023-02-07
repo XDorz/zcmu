@@ -49,13 +49,16 @@ public class AssertUtil {
      * @param errorMsg          错误信息
      */
     public static void assertNotNull(Object obj,KVenum<String,String> resultCode,String errorMsg) {
-        if (obj == null) {
-            throw new ZCMUException(resultCode, errorMsg);
-        }
         if(obj instanceof String){
-            if("".equals((String)obj)){
+            if(!StringUtils.hasText((String)obj)){
                 throw new ZCMUException(resultCode, errorMsg);
             }
+//            if("".equals((String)obj)){
+//                throw new ZCMUException(resultCode, errorMsg);
+//            }
+        }
+        if (obj == null) {
+            throw new ZCMUException(resultCode, errorMsg);
         }
     }
 

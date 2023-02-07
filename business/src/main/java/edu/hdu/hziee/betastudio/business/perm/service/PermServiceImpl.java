@@ -8,7 +8,6 @@ import edu.hdu.hziee.betastudio.dao.perm.model.PermDO;
 import edu.hdu.hziee.betastudio.dao.perm.model.PermUserRelationDO;
 import edu.hdu.hziee.betastudio.dao.perm.repo.PermDORepo;
 import edu.hdu.hziee.betastudio.dao.perm.repo.PermUserRelationDORepo;
-import edu.hdu.hziee.betastudio.dao.user.repo.UserDORepo;
 import edu.hdu.hziee.betastudio.util.common.AssertUtil;
 import edu.hdu.hziee.betastudio.util.common.CollectionUtils;
 import edu.hdu.hziee.betastudio.util.customenum.ExceptionResultCode;
@@ -32,8 +31,6 @@ public class PermServiceImpl implements PermService{
 
     @Autowired
     PermConvert convert;
-    @Autowired
-    private UserDORepo userDORepo;
 
     @Override
     public boolean userExistPerm(UserPermRequest request) {
@@ -140,5 +137,16 @@ public class PermServiceImpl implements PermService{
         result.add(permBOS);
         result.add(hasPerm);
         return result;
+    }
+
+    @Override
+    public List<PermBO> getUserPermInfo(UserPermRequest request) {
+        List<PermUserRelationDO> relationDOS = permUserRelationDORepo.findAllByUserId(request.getUserId());
+        return CollectionUtils.toStream(relationDOS)
+                .filter(Objects::nonNull)
+                .map(relationDO -> permDORepo.findAllByPermId(relationDO.getPermId()))
+                .filter(Objects::nonNull)
+                .map(convert::convert)
+                .toList();
     }
 }

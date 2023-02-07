@@ -31,7 +31,7 @@ public class HomeworkDO extends BasicModel {
     @Column(name="info",updatable = true,nullable = true,unique = false,columnDefinition = "varchar(1024) comment '作业详情'")
     private String info;
 
-    @Column(name="name",updatable = true,nullable = false,unique = false,columnDefinition = "varchar(32) comment '作业名'")
+    @Column(name="homework_name",updatable = true,nullable = false,unique = false,columnDefinition = "varchar(32) comment '作业名'")
     private String name;
 
     @Column(name="start",updatable = true,nullable = false,unique = false,columnDefinition = "datetime comment '作业开始时间'")

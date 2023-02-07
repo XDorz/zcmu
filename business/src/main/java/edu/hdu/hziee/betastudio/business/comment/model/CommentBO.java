@@ -34,11 +34,11 @@ public class CommentBO {
     @ApiModelProperty(name = "主评论id")
     private Long masterId;
 
-    @ApiModelProperty(name = "评论链(仅masterComment有)")
-    private List<CommentBO> commentBOList;
-
     @ApiModelProperty(name = "评论内容")
     private String content;
+
+    @ApiModelProperty(name = "评论链(仅masterComment有)")
+    private List<CommentBO> commentBOList;
 
     @ApiModelProperty(name = "评论所属ip地址")
     private String ipAddr;

@@ -26,4 +26,6 @@ public class UserRestRequest implements UserCheckedRequest {
 
     private List<Long> userIds;
 
+    private String pic;
+
 }

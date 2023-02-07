@@ -20,6 +20,10 @@ public interface ResoursDORepo extends JpaRepository<ResoursDO,Long> {
     Integer updateUrl(Long resourceId,String url);
 
     @Modifying
+    @Query(value = "update zcmu_resource set resource_name=?2 where resource_id=?1",nativeQuery = true)
+    Integer updateName(Long resourceId,String resourceName);
+
+    @Modifying
     @Query(value = "update zcmu_resource set belong_id=?2 where resource_id=?1",nativeQuery = true)
     Integer updateBelong(Long resourceId,Long belongId);
 

@@ -79,7 +79,7 @@ public class CosUtil {
      * 从文件名获取文件url
      */
     private String getFileUrl(String fileName){
-        return endpoint+fileHost+fileName;
+        return "https://"+endpoint+fileHost+fileName;
     }
 
     /**

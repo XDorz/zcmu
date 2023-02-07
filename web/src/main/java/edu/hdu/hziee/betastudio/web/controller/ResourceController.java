@@ -43,7 +43,7 @@ public class ResourceController {
             }
 
             @Override
-            public ZCMUResult<ResoursBO> operate() throws IOException {
+            public ZCMUResult<ResoursBO> operate(){
                 ResoursRequest resoursRequest = ResoursRequest.builder()
                         .belongId(request.getBelongId())
                         .picFile(picFile)
@@ -61,7 +61,7 @@ public class ResourceController {
      * 比起直接请求该接口，更加推荐在其他接口内部就将资源与对象关联
      * 因为请求该接口前须得等对象创建玩返回其id值
      * 所以【该接口仅为备用】
-     * {@link }
+     * {@link #uploadResource(ResourceRestRequest, HttpServletRequest, MultipartFile, MultipartFile)}
      */
     @CheckLogin
     @PutMapping("/connect")
@@ -77,7 +77,7 @@ public class ResourceController {
             }
 
             @Override
-            public ZCMUResult<Void> operate() throws IOException {
+            public ZCMUResult<Void> operate(){
                 ResoursRequest resoursRequest = ResoursRequest.builder()
                         .belongId(request.getBelongId())
                         .userId(request.getUserId())
@@ -102,7 +102,7 @@ public class ResourceController {
             }
 
             @Override
-            public ZCMUResult<Void> operate() throws IOException {
+            public ZCMUResult<Void> operate(){
                 ResoursRequest resoursRequest = ResoursRequest.builder()
                         .resourceId(request.getResourceId())
                         .userId(request.getUserId())
@@ -110,6 +110,87 @@ public class ResourceController {
                 resoursRequest.setVerifyId(request.getUserId());
                 resoursService.deleteResource(resoursRequest);
                 return RestUtil.buildSuccessResult(null,"资源删除成功");
+            }
+        });
+    }
+
+    @CheckLogin
+    @PutMapping("/name")
+    public ZCMUResult<Void> updateResourceName(ResourceRestRequest request, HttpServletRequest httpServletRequest){
+        return OperateTemplate.operate(log, "修改资源名称", request, httpServletRequest, new OperateCallBack<Void>() {
+            @Override
+            public void before() {
+                AssertUtil.assertNotNull(request, ExceptionResultCode.ILLEGAL_PARAMETERS,"请求不能为空");
+                AssertUtil.assertNotNull(httpServletRequest,ExceptionResultCode.ILLEGAL_PARAMETERS,"请求不能为空");
+                AssertUtil.assertNotNull(request.getResourceId(),ExceptionResultCode.ILLEGAL_PARAMETERS,"资源id无法为空");
+                AssertUtil.assertNotNull(request.getName(),ExceptionResultCode.ILLEGAL_PARAMETERS,"新的资源名称无法为空");
+                AssertUtil.assertNotNull(request.getUserId(),ExceptionResultCode.UNAUTHORIZED,"用户未登录");
+            }
+
+            @Override
+            public ZCMUResult<Void> operate(){
+                ResoursRequest resoursRequest = ResoursRequest.builder()
+                        .resourceId(request.getResourceId())
+                        .userId(request.getUserId())
+                        .name(request.getName())
+                        .build();
+                resoursRequest.setVerifyId(request.getUserId());
+                resoursService.updateResourceName(resoursRequest);
+                return RestUtil.buildSuccessResult(null,"资源名称修改成功");
+            }
+        });
+    }
+
+    @CheckLogin
+    @PutMapping("/info")
+    public ZCMUResult<Void> updateResourceInfo(ResourceRestRequest request, HttpServletRequest httpServletRequest){
+        return OperateTemplate.operate(log, "修改资源名称", request, httpServletRequest, new OperateCallBack<Void>() {
+            @Override
+            public void before() {
+                AssertUtil.assertNotNull(request, ExceptionResultCode.ILLEGAL_PARAMETERS,"请求不能为空");
+                AssertUtil.assertNotNull(httpServletRequest,ExceptionResultCode.ILLEGAL_PARAMETERS,"请求不能为空");
+                AssertUtil.assertNotNull(request.getResourceId(),ExceptionResultCode.ILLEGAL_PARAMETERS,"资源id无法为空");
+                AssertUtil.assertNotNull(request.getInfo(),ExceptionResultCode.ILLEGAL_PARAMETERS,"新的信息无法为空");
+                AssertUtil.assertNotNull(request.getUserId(),ExceptionResultCode.UNAUTHORIZED,"用户未登录");
+            }
+
+            @Override
+            public ZCMUResult<Void> operate(){
+                ResoursRequest resoursRequest = ResoursRequest.builder()
+                        .resourceId(request.getResourceId())
+                        .userId(request.getUserId())
+                        .info(request.getInfo())
+                        .build();
+                resoursRequest.setVerifyId(request.getUserId());
+                resoursService.updateResourceInfo(resoursRequest);
+                return RestUtil.buildSuccessResult(null,"资源信息修改成功");
+            }
+        });
+    }
+
+    @CheckLogin
+    @PutMapping("/pic")
+    public ZCMUResult<Void> updateResourcePic(ResourceRestRequest request, HttpServletRequest httpServletRequest, @PathParam("picFile") MultipartFile picFile){
+        return OperateTemplate.operate(log, "更新资源封面图", request, httpServletRequest, new OperateCallBack<Void>() {
+            @Override
+            public void before() {
+                AssertUtil.assertNotNull(request, ExceptionResultCode.ILLEGAL_PARAMETERS,"请求不能为空");
+                AssertUtil.assertNotNull(httpServletRequest,ExceptionResultCode.ILLEGAL_PARAMETERS,"请求不能为空");
+                AssertUtil.assertNotNull(request.getResourceId(),ExceptionResultCode.ILLEGAL_PARAMETERS,"资源id无法为空");
+                AssertUtil.assertNotNull(picFile,ExceptionResultCode.ILLEGAL_PARAMETERS,"封面图片不能为空");
+                AssertUtil.assertNotNull(request.getUserId(),ExceptionResultCode.UNAUTHORIZED,"用户未登录");
+            }
+
+            @Override
+            public ZCMUResult<Void> operate() {
+                ResoursRequest resoursRequest = ResoursRequest.builder()
+                        .resourceId(request.getResourceId())
+                        .picFile(picFile)
+                        .userId(request.getUserId())
+                        .build();
+                resoursRequest.setVerifyId(request.getUserId());
+                resoursService.updateResourcePicUrl(resoursRequest);
+                return RestUtil.buildSuccessResult(null,"资源封面替换成功");
             }
         });
     }

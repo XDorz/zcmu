@@ -33,7 +33,7 @@ public class ResoursDO {
     @Column(name = "url", updatable = false, nullable = true, unique = true, columnDefinition = "varchar(128) comment '资源链接(OSS)'")
     private String url;
 
-    @Column(name = "name", updatable = true, nullable = true, unique = false, columnDefinition = "varchar(512) comment '资源名称'")
+    @Column(name = "resource_name", updatable = true, nullable = true, unique = false, columnDefinition = "varchar(512) comment '资源名称'")
     private String name;
 
     @Column(name = "info", updatable = true, nullable = true, unique = false, columnDefinition = "varchar(512) comment '资源描述'")

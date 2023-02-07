@@ -26,4 +26,8 @@ public interface LessonDORepo extends JpaRepository<LessonDO,Long> {
     @Modifying
     @Query(value = "update lesson set info=?2 where lesson_id=?1",nativeQuery = true)
     Integer updateInfo(Long lessonId,String info);
+
+    @Modifying
+    @Query(value = "update lesson set deleted=?2 where lesson_id=?1",nativeQuery = true)
+    Integer deleteLesson(Long lessonId,boolean deleted);
 }

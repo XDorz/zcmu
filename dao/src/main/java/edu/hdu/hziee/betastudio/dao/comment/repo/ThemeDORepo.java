@@ -15,6 +15,8 @@ public interface ThemeDORepo extends JpaRepository<ThemeDO,Long> {
 
     List<ThemeDO> findAllByDeleted(boolean deleted);
 
+    List<ThemeDO> findAllByUserIdAndDeleted(Long userId,boolean deleted);
+
     @Modifying
     @Query(value = "update zcmu_theme set hot=hot+?2 where theme_id=?1",nativeQuery = true)
     Integer increaseHot(Long themeId,int increasedNum);
@@ -26,4 +28,8 @@ public interface ThemeDORepo extends JpaRepository<ThemeDO,Long> {
     @Modifying
     @Query(value = "update zcmu_theme set deleted=?2 where theme_id=?1",nativeQuery = true)
     Integer deleteTheme(Long themeId,boolean deleted);
+
+    @Modifying
+    @Query(value = "update zcmu_theme set theme_name=?2 where theme_id=?1",nativeQuery = true)
+    Integer updateThemeName(Long themeId,String themeName);
 }

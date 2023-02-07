@@ -63,6 +63,8 @@ public class UserServiceImpl implements UserService {
                 .userId(userId)
                 .picUrl(ZCMUConstant.USER_PIC_URL)
                 .stuId(stuId)
+                .sex("女")
+                .ext("{}")
                 .build();
         userInfoDORepo.save(userInfoDO);
 
@@ -120,7 +122,13 @@ public class UserServiceImpl implements UserService {
         //用于排除list内相同学号
         Set<Long> savedIds = new HashSet<>();
         for (UserInfoBO userInfoBO : userInfoBOS) {
-            Long stuId = userInfoBO.getStuId();
+            Long stuId=userInfoBO.getStuId();
+            if(stuId==null){
+                stuId=userInfoBO.getWorkId();
+            }
+            AssertUtil.assertNotNull(stuId,ExceptionResultCode.ILLEGAL_PARAMETERS,"上传用户表中有用户没有给出学号/工号，错误可能在第【"
+                    +i+"】行，本次批量注册未进行");
+            userInfoBO.setStuId(stuId);
             if (stuIds.contains(stuId) || savedIds.contains(stuId)) {
                 sb.append("第").append(i).append("行")
                         .append("名称为【").append(userInfoBO.getRealName()).append("】的学生的学号重复，请核对后修改\n");

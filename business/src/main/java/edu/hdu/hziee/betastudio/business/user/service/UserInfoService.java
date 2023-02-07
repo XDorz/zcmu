@@ -10,4 +10,6 @@ public interface UserInfoService {
     void updateUserName(UserRequest request);
 
     void updatePic(UserRequest request);
+
+    void updatePicByByte(UserRequest request);
 }

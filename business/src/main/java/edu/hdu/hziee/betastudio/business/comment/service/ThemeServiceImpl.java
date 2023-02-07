@@ -5,17 +5,18 @@ import edu.hdu.hziee.betastudio.business.comment.convert.ThemeConvert;
 import edu.hdu.hziee.betastudio.business.comment.model.SimpleThemeBO;
 import edu.hdu.hziee.betastudio.business.comment.model.ThemeBO;
 import edu.hdu.hziee.betastudio.business.comment.request.CommentRequest;
-import edu.hdu.hziee.betastudio.business.perm.request.UserPermRequest;
 import edu.hdu.hziee.betastudio.business.perm.service.PermService;
+import edu.hdu.hziee.betastudio.business.perm.verify.VerifyOperate;
 import edu.hdu.hziee.betastudio.business.resours.request.ResoursRequest;
 import edu.hdu.hziee.betastudio.business.resours.service.ResoursService;
 import edu.hdu.hziee.betastudio.dao.comment.model.ThemeDO;
+import edu.hdu.hziee.betastudio.dao.comment.model.ThemeSubscribeDO;
 import edu.hdu.hziee.betastudio.dao.comment.repo.ThemeDORepo;
+import edu.hdu.hziee.betastudio.dao.comment.repo.ThemeSubscribeDORepo;
 import edu.hdu.hziee.betastudio.util.common.AssertUtil;
 import edu.hdu.hziee.betastudio.util.common.CollectionUtils;
 import edu.hdu.hziee.betastudio.util.customenum.ExceptionResultCode;
 import edu.hdu.hziee.betastudio.util.customenum.OperateLevelEnum;
-import edu.hdu.hziee.betastudio.util.customenum.PermEnum;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -41,7 +42,21 @@ public class ThemeServiceImpl implements ThemeService{
     @Autowired
     PermService permService;
 
+    @Autowired
+    ThemeSubscribeDORepo themeSubscribeDORepo;
+
+    @Autowired
+    private void setVerify(VerifyOperate verifyOperate){
+        this.verifyOperate=verifyOperate.getInstance(this::customVerify);
+    }
+    private VerifyOperate verifyOperate;
+
+    /**
+     * 同一类中的方法不受SpringAOP的代理，故此处increaseHot中的 @Transactional 注解无效
+     * 该方法需要补一个 @Transactional 来完成修改操作
+     */
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public ThemeBO getTheme(CommentRequest request) {
         ThemeDO themeDO = themeDORepo.findAllByThemeId(request.getThemeId());
         //convert中做过判空操作，所以此处不必担心热度增加会找不到对应的主题帖
@@ -50,7 +65,7 @@ public class ThemeServiceImpl implements ThemeService{
         //增加浏览量热度
         request.setSkipVerify(true);
         request.setHot(1);
-        increaseCountNum(request);
+        increaseHot(request);
         return themeBO;
     }
 
@@ -101,6 +116,56 @@ public class ThemeServiceImpl implements ThemeService{
         return convert.convert(themeDO);
     }
 
+    @Override
+    public List<SimpleThemeBO> getAllSelfTheme(CommentRequest request) {
+        return CollectionUtils.toStream(themeDORepo.findAllByUserIdAndDeleted(request.getUserId(),false))
+                .filter(Objects::nonNull)
+                .map(convert::convertSimple)
+                .toList();
+    }
+
+    @Override
+    public void subscribeTheme(CommentRequest request) {
+        AssertUtil.assertTrue(!themeSubscribeDORepo.existsByUserIdAndThemeId(request.getUserId(), request.getThemeId())
+                ,ExceptionResultCode.ILLEGAL_PARAMETERS,"无法重复订阅主题！");
+        ThemeDO themeDO = themeDORepo.findAllByThemeId(request.getThemeId());
+        AssertUtil.assertNotNull(themeDO,ExceptionResultCode.FORBIDDEN,"该主题不存在，无法订阅！");
+        AssertUtil.assertTrue(!themeDO.isDeleted(),ExceptionResultCode.FORBIDDEN,"该主题已被删除，无法订阅！");
+
+
+        long subscribeId = IdUtil.getSnowflakeNextId();
+        ThemeSubscribeDO subscribeDO = ThemeSubscribeDO.builder()
+                .subscribeId(subscribeId)
+                .userId(request.getUserId())
+                .themeId(request.getThemeId())
+                .build();
+        //todo 如果有推送模块，则推送该消息
+        themeSubscribeDORepo.save(subscribeDO);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void unSubscribeTheme(CommentRequest request) {
+        themeSubscribeDORepo.deleteByUserIdAndThemeId(request.getUserId(),request.getThemeId());
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public Integer deleteAllThemeSubscribe(Long themeId) {
+        return themeSubscribeDORepo.deleteAllByThemeId(themeId);
+    }
+
+    @Override
+    public List<SimpleThemeBO> getSubscribeThemes(CommentRequest request) {
+        return CollectionUtils.toStream(themeSubscribeDORepo.findByUserId(request.getUserId()))
+                .filter(Objects::nonNull)
+                .map(ThemeSubscribeDO::getThemeId)
+                .map(themeDORepo::findAllByThemeId)
+                .filter(Objects::nonNull)
+                .map(convert::convertSimple)
+                .toList();
+    }
+
     /**
      * 防止混乱需要使用同步锁
      */
@@ -122,15 +187,29 @@ public class ThemeServiceImpl implements ThemeService{
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void deleteTheme(CommentRequest request) {
-        AssertUtil.assertTrue(verifyBelong(request.getUserId(),request.getThemeId()).hasPerm(OperateLevelEnum.MEDIUM_OPERATE)
+        ThemeDO themeDO = themeDORepo.findAllByThemeId(request.getThemeId());
+        AssertUtil.assertNotNull(themeDO,ExceptionResultCode.ILLEGAL_PARAMETERS,"查无该主题帖");
+        AssertUtil.assertTrue(!themeDO.isDeleted(),ExceptionResultCode.ILLEGAL_PARAMETERS,"无法删除已经删除的主题帖");
+        AssertUtil.assertTrue(verifyOperate.verifyLevel(request.getVerifyId(),request.getThemeId()).hasPerm(OperateLevelEnum.MEDIUM_OPERATE)
                 , ExceptionResultCode.FORBIDDEN,"您无权删除该帖子！");
         themeDORepo.deleteTheme(request.getThemeId(),true);
+        //删除该帖子的所有订阅( !无法撤销！)
+        deleteAllThemeSubscribe(themeDO.getThemeId());
     }
 
-    private OperateLevelEnum verifyBelong(Long userId, Long themeId) {
-        if (userId == null || themeId == null) {
-            return OperateLevelEnum.FORBIDDEN;
-        }
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void updateThemeName(CommentRequest request) {
+        AssertUtil.assertTrue(verifyOperate.verifyLevel(request.getVerifyId(),request.getThemeId()).hasPerm(OperateLevelEnum.MEDIUM_OPERATE)
+                , ExceptionResultCode.FORBIDDEN,"您无权修改该帖子的标题！");
+
+        themeDORepo.updateThemeName(request.getThemeId(),request.getThemeTitle());
+    }
+
+
+    //====================================以下为自定义鉴权与归属鉴定方法========================================
+
+    private OperateLevelEnum customVerify(Long userId,Long themeId){
         ThemeDO themeDO = themeDORepo.findAllByThemeId(themeId);
         if (themeDO == null) {
             return OperateLevelEnum.FORBIDDEN;
@@ -140,16 +219,6 @@ public class ThemeServiceImpl implements ThemeService{
         if (userId.equals(themeDO.getUserId())) {
             return OperateLevelEnum.TOTAL_OPERATE;
         }
-
-        //总管理可以操作帖子
-        UserPermRequest userPermRequest = UserPermRequest.builder()
-                .userId(userId)
-                .codeName(PermEnum.MANAGER.getCode())
-                .build();
-        userPermRequest.setSkipVerify(true);
-        if(permService.userExistPerm(userPermRequest)){
-            return OperateLevelEnum.MEDIUM_OPERATE;
-        }
-        return OperateLevelEnum.FORBIDDEN;
+        return null;
     }
 }

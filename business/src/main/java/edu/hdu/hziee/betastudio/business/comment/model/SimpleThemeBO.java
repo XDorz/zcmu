@@ -17,6 +17,9 @@ public class SimpleThemeBO {
     @ApiModelProperty(name = "主题id")
     private Long themeId;
 
+    @ApiModelProperty(name = "主题名称")
+    private String themeName;
+
     @ApiModelProperty(name = "主题发布人信息")
     private AppUserInfoBO appUserInfoBO;
 
@@ -26,6 +29,10 @@ public class SimpleThemeBO {
     //一评论10热度，一浏览1热度
     @Column(name="hot",updatable = true,nullable = false,unique = false,columnDefinition = "int comment '热度'")
     private int hot;
+
+    //一订阅量8热度
+    @ApiModelProperty(name = "帖子关注度(订阅数量)")
+    private int subscribed;
 
     //评论量
     @Column(name="comment_num",updatable = true,nullable = false,unique = false,columnDefinition = "int comment '评论量'")

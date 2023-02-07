@@ -154,7 +154,7 @@ public class PermController {
     @CheckLogin
     @PostMapping("/user/perm")
     public ZCMUResult<List<List<PermBO>>> userPerm(PermRestRequest request, HttpServletRequest httpServletRequest){
-        return OperateTemplate.operate(log, "查看某用户的权限情况", request, httpServletRequest, new OperateCallBack<List<List<PermBO>>>() {
+        return OperateTemplate.operate(log, "查看某用户的所有权限情况", request, httpServletRequest, new OperateCallBack<List<List<PermBO>>>() {
             @Override
             public void before() {
                 AssertUtil.assertNotNull(request, ExceptionResultCode.ILLEGAL_PARAMETERS,"请求不能为空");
@@ -170,6 +170,28 @@ public class PermController {
                         .build();
                 userPermRequest.setVerifyId(request.getUserId());
                 return RestUtil.buildSuccessResult(permService.getAllUserPermInfo(userPermRequest),"获取用户权限信息成功");
+            }
+        });
+    }
+
+    @CheckLogin
+    @GetMapping
+    public ZCMUResult<List<PermBO>> userHadPerm(PermRestRequest request, HttpServletRequest httpServletRequest){
+        return OperateTemplate.operate(log, "查看某用户拥有的权限", request, httpServletRequest, new OperateCallBack<List<PermBO>>() {
+            @Override
+            public void before() {
+                AssertUtil.assertNotNull(request, ExceptionResultCode.ILLEGAL_PARAMETERS,"请求不能为空");
+                AssertUtil.assertNotNull(httpServletRequest,ExceptionResultCode.ILLEGAL_PARAMETERS,"请求不能为空");
+                AssertUtil.assertNotNull(request.getUserId(),ExceptionResultCode.UNAUTHORIZED,"用户未登录");
+            }
+
+            @Override
+            public ZCMUResult<List<PermBO>> operate() throws IOException {
+                UserPermRequest userPermRequest = UserPermRequest.builder()
+                        .userId(request.getUserId())
+                        .build();
+                userPermRequest.setVerifyId(request.getUserId());
+                return RestUtil.buildSuccessResult(permService.getUserPermInfo(userPermRequest),"获取用户权限信息成功");
             }
         });
     }
